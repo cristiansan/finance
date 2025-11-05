@@ -180,12 +180,15 @@ function updateDashboardSummary() {
     // Calculate ZCash annual income
     const zcashAnnualIncome = (ZCASH_BALANCE * APR) * zcashPrice;
 
+    // Calculate ACN annual dividend income
+    const acnAnnualIncome = ACN_ANNUAL_DIVIDEND; // $184.96
+
     // Total portfolio value (we'll use nominal value for ON)
     const onValue = 32050; // Sum of all ON holdings (10050 + 10000 + 10000 + 2000)
     const totalValue = zcashUsdValue + acnValue + onValue;
 
-    // Total annual income
-    const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome;
+    // Total annual income (ZCash staking + ON interest + ACN dividends)
+    const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome + acnAnnualIncome;
 
     // Update dashboard summary cards
     document.getElementById('dashTotalValue').textContent = formatCurrency(totalValue);
@@ -544,50 +547,55 @@ const obligacionesNegociables = [
         ticker: 'VSCOD',
         name: 'Vista Oil & Gas',
         holdings: 10050,
-        couponRate: 0.085,
-        maturityDate: '2028-05-15',
+        couponRate: 0.065,
+        maturityDate: '2027-03-06',
         paymentDates: [
-            { date: '2025-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2025-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2026-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2026-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2027-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2027-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2028-05-15', type: 'Interés + Amortización', amount: 1009271.25 }
+            { date: '2026-03-06', type: 'Interés', amount: 321.70 },
+            { date: '2026-09-06', type: 'Interés', amount: 321.70 },
+            { date: '2027-03-06', type: 'Interés + Amortización', amount: 10371.70 }
         ]
     },
     {
         ticker: 'YM35D',
         name: 'YPF - Serie XXXV',
         holdings: 10000,
-        couponRate: 0.0775,
-        maturityDate: '2035-06-20',
+        couponRate: 0.0625,
+        maturityDate: '2027-03-01',
         paymentDates: [
-            { date: '2025-06-20', type: 'Interés', amount: 3875.00 },
-            { date: '2025-12-20', type: 'Interés', amount: 3875.00 },
-            { date: '2026-06-20', type: 'Interés', amount: 3875.00 }
+            { date: '2025-11-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-02-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-05-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-08-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-11-27', type: 'Interés', amount: 153.90 },
+            { date: '2027-03-01', type: 'Interés + Amortización', amount: 10153.90 }
         ]
     },
     {
         ticker: 'YM37D',
         name: 'YPF - Serie XXXVII',
         holdings: 10000,
-        couponRate: 0.0825,
-        maturityDate: '2037-09-10',
+        couponRate: 0.07,
+        maturityDate: '2027-05-07',
         paymentDates: [
-            { date: '2025-03-10', type: 'Interés', amount: 4125.00 },
-            { date: '2025-09-10', type: 'Interés', amount: 4125.00 },
-            { date: '2026-03-10', type: 'Interés', amount: 4125.00 }
+            { date: '2025-11-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-02-09', type: 'Interés', amount: 172.30 },
+            { date: '2026-05-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-08-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-11-09', type: 'Interés', amount: 172.30 },
+            { date: '2027-02-08', type: 'Interés', amount: 172.30 },
+            { date: '2027-05-07', type: 'Interés + Amortización', amount: 10172.30 }
         ]
     },
     {
         ticker: 'T652D',
-        name: 'Telecom Argentina',
+        name: 'Tarjeta Naranja',
         holdings: 2000,
-        couponRate: 0.09,
-        maturityDate: '2025-04-30',
+        couponRate: 0.074,
+        maturityDate: '2026-05-26',
         paymentDates: [
-            { date: '2025-04-30', type: 'Interés + Amortización', amount: 2090.00 }
+            { date: '2025-11-26', type: 'Interés', amount: 36.00 },
+            { date: '2026-02-26', type: 'Interés', amount: 36.00 },
+            { date: '2026-05-26', type: 'Interés + Amortización', amount: 2036.00 }
         ]
     }
 ];
@@ -726,6 +734,8 @@ function updateUpcomingPaymentsTimeline() {
 const ACN_SHARES = 34;
 const ACN_AVG_PRICE = 246.34; // Precio promedio de compra
 const ACN_TOTAL_INVESTED = ACN_SHARES * ACN_AVG_PRICE;
+const ACN_DIVIDEND_PER_SHARE = 5.44; // Dividendo anual por acción (USD)
+const ACN_ANNUAL_DIVIDEND = ACN_SHARES * ACN_DIVIDEND_PER_SHARE; // ~$184.96
 let acnPrice = 0;
 let acnPreviousClose = 0;
 let acnLastUpdate = null;
@@ -853,6 +863,10 @@ function updateACNDisplay() {
             const timeAgo = getTimeAgo(acnLastUpdate);
             document.getElementById('acnLastUpdated').textContent = `Actualizado ${timeAgo}`;
         }
+
+        // Update dividend yield based on current price
+        const dividendYield = (ACN_DIVIDEND_PER_SHARE / acnPrice) * 100;
+        document.getElementById('acnDividendYield').textContent = `~${dividendYield.toFixed(2)}%`;
     } else {
         document.getElementById('acnPrice').textContent = 'Error al cargar';
         document.getElementById('acnTotalValue').textContent = 'Error';

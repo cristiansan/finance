@@ -143,19 +143,19 @@
                     <div class="investment-body">
                         <div class="investment-row">
                             <span class="inv-label">VSCOD (10,050):</span>
-                            <span class="inv-value">8.5% - Vence 2028</span>
+                            <span class="inv-value">6.5% - Vence 2027</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">YM35D (10,000):</span>
-                            <span class="inv-value">7.75% - Vence 2035</span>
+                            <span class="inv-value">6.25% - Vence 2027</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">YM37D (10,000):</span>
-                            <span class="inv-value">8.25% - Vence 2037</span>
+                            <span class="inv-value">7.0% - Vence 2027</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">T652D (2,000):</span>
-                            <span class="inv-value">9.0% - Vence 2025</span>
+                            <span class="inv-value">7.4% - Vence 2026</span>
                         </div>
                         <div class="investment-row" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
                             <span class="inv-label">Próximo Pago:</span>
@@ -289,6 +289,31 @@
                 </div>
             </div>
 
+            <!-- Dividend Information -->
+            <h3 style="color: var(--text-primary); margin-bottom: 16px; font-size: 20px;">💵 Dividendos</h3>
+            <div class="earnings-grid">
+                <div class="earnings-card">
+                    <div class="earnings-period">Dividendo por Acción</div>
+                    <div class="earnings-crypto">$5.44</div>
+                    <div class="earnings-usd">Anual</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Dividendo Trimestral</div>
+                    <div class="earnings-crypto">$46.24</div>
+                    <div class="earnings-usd">Cada 3 meses</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Dividendo Anual Total</div>
+                    <div class="earnings-crypto">$184.96</div>
+                    <div class="earnings-usd">34 acciones × $5.44</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Dividend Yield</div>
+                    <div class="earnings-crypto" id="acnDividendYield">~2.21%</div>
+                    <div class="earnings-usd">Basado en precio actual</div>
+                </div>
+            </div>
+
             <!-- Summary Table -->
             <div class="crypto-summary">
                 <h3>📊 Resumen de Inversión</h3>
@@ -377,19 +402,19 @@
                     <div class="on-card-body">
                         <div class="on-info-row">
                             <span class="info-label">Tasa Cupón:</span>
-                            <span class="info-value">8.5% anual</span>
+                            <span class="info-value">6.5% anual</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Vencimiento:</span>
-                            <span class="info-value">15/05/2028</span>
+                            <span class="info-value">06/03/2027</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Próximo Pago:</span>
-                            <span class="info-value highlight">15/05/2025</span>
+                            <span class="info-value highlight">06/03/2026</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Monto Estimado:</span>
-                            <span class="info-value success">$4,271.25</span>
+                            <span class="info-value success">$321.70</span>
                         </div>
                     </div>
                     <button class="on-detail-btn" onclick="togglePaymentSchedule('vscod')">
@@ -406,39 +431,19 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>15/05/2025</td>
+                                    <td>06/03/2026</td>
                                     <td>Interés</td>
-                                    <td>$4,271.25</td>
+                                    <td>$321.70</td>
                                 </tr>
                                 <tr>
-                                    <td>15/11/2025</td>
+                                    <td>06/09/2026</td>
                                     <td>Interés</td>
-                                    <td>$4,271.25</td>
-                                </tr>
-                                <tr>
-                                    <td>15/05/2026</td>
-                                    <td>Interés</td>
-                                    <td>$4,271.25</td>
-                                </tr>
-                                <tr>
-                                    <td>15/11/2026</td>
-                                    <td>Interés</td>
-                                    <td>$4,271.25</td>
-                                </tr>
-                                <tr>
-                                    <td>15/05/2027</td>
-                                    <td>Interés</td>
-                                    <td>$4,271.25</td>
-                                </tr>
-                                <tr>
-                                    <td>15/11/2027</td>
-                                    <td>Interés</td>
-                                    <td>$4,271.25</td>
+                                    <td>$321.70</td>
                                 </tr>
                                 <tr class="final-payment">
-                                    <td>15/05/2028</td>
+                                    <td>06/03/2027</td>
                                     <td>Interés + Amortización</td>
-                                    <td>$1,009,271.25</td>
+                                    <td>$10,371.70</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -460,19 +465,19 @@
                     <div class="on-card-body">
                         <div class="on-info-row">
                             <span class="info-label">Tasa Cupón:</span>
-                            <span class="info-value">7.75% anual</span>
+                            <span class="info-value">6.25% anual</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Vencimiento:</span>
-                            <span class="info-value">20/06/2035</span>
+                            <span class="info-value">01/03/2027</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Próximo Pago:</span>
-                            <span class="info-value highlight">20/06/2025</span>
+                            <span class="info-value highlight">27/11/2025</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Monto Estimado:</span>
-                            <span class="info-value success">$3,875.00</span>
+                            <span class="info-value success">$153.90</span>
                         </div>
                     </div>
                     <button class="on-detail-btn" onclick="togglePaymentSchedule('ym35d')">
@@ -489,29 +494,34 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>20/06/2025</td>
+                                    <td>27/11/2025</td>
                                     <td>Interés</td>
-                                    <td>$3,875.00</td>
+                                    <td>$153.90</td>
                                 </tr>
                                 <tr>
-                                    <td>20/12/2025</td>
+                                    <td>27/02/2026</td>
                                     <td>Interés</td>
-                                    <td>$3,875.00</td>
+                                    <td>$153.90</td>
                                 </tr>
                                 <tr>
-                                    <td>20/06/2026</td>
+                                    <td>27/05/2026</td>
                                     <td>Interés</td>
-                                    <td>$3,875.00</td>
+                                    <td>$153.90</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 12px;">
-                                        ... Pagos semestrales hasta vencimiento ...
-                                    </td>
+                                    <td>27/08/2026</td>
+                                    <td>Interés</td>
+                                    <td>$153.90</td>
+                                </tr>
+                                <tr>
+                                    <td>27/11/2026</td>
+                                    <td>Interés</td>
+                                    <td>$153.90</td>
                                 </tr>
                                 <tr class="final-payment">
-                                    <td>20/06/2035</td>
+                                    <td>01/03/2027</td>
                                     <td>Interés + Amortización</td>
-                                    <td>$1,003,875.00</td>
+                                    <td>$10,153.90</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -533,19 +543,19 @@
                     <div class="on-card-body">
                         <div class="on-info-row">
                             <span class="info-label">Tasa Cupón:</span>
-                            <span class="info-value">8.25% anual</span>
+                            <span class="info-value">7.0% anual</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Vencimiento:</span>
-                            <span class="info-value">10/09/2037</span>
+                            <span class="info-value">07/05/2027</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Próximo Pago:</span>
-                            <span class="info-value highlight">10/03/2025</span>
+                            <span class="info-value highlight">07/11/2025</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Monto Estimado:</span>
-                            <span class="info-value success">$4,125.00</span>
+                            <span class="info-value success">$172.30</span>
                         </div>
                     </div>
                     <button class="on-detail-btn" onclick="togglePaymentSchedule('ym37d')">
@@ -562,29 +572,39 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>10/03/2025</td>
+                                    <td>07/11/2025</td>
                                     <td>Interés</td>
-                                    <td>$4,125.00</td>
+                                    <td>$172.30</td>
                                 </tr>
                                 <tr>
-                                    <td>10/09/2025</td>
+                                    <td>09/02/2026</td>
                                     <td>Interés</td>
-                                    <td>$4,125.00</td>
+                                    <td>$172.30</td>
                                 </tr>
                                 <tr>
-                                    <td>10/03/2026</td>
+                                    <td>07/05/2026</td>
                                     <td>Interés</td>
-                                    <td>$4,125.00</td>
+                                    <td>$172.30</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 12px;">
-                                        ... Pagos semestrales hasta vencimiento ...
-                                    </td>
+                                    <td>07/08/2026</td>
+                                    <td>Interés</td>
+                                    <td>$172.30</td>
+                                </tr>
+                                <tr>
+                                    <td>09/11/2026</td>
+                                    <td>Interés</td>
+                                    <td>$172.30</td>
+                                </tr>
+                                <tr>
+                                    <td>08/02/2027</td>
+                                    <td>Interés</td>
+                                    <td>$172.30</td>
                                 </tr>
                                 <tr class="final-payment">
-                                    <td>10/09/2037</td>
+                                    <td>07/05/2027</td>
                                     <td>Interés + Amortización</td>
-                                    <td>$1,004,125.00</td>
+                                    <td>$10,172.30</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -596,7 +616,7 @@
                     <div class="on-card-header">
                         <div>
                             <h3 class="on-ticker">T652D</h3>
-                            <p class="on-name">Telecom Argentina</p>
+                            <p class="on-name">Tarjeta Naranja</p>
                         </div>
                         <div class="on-holdings">
                             <span class="holdings-amount">2,000</span>
@@ -606,19 +626,19 @@
                     <div class="on-card-body">
                         <div class="on-info-row">
                             <span class="info-label">Tasa Cupón:</span>
-                            <span class="info-value">9.0% anual</span>
+                            <span class="info-value">7.4% anual</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Vencimiento:</span>
-                            <span class="info-value">30/04/2025</span>
+                            <span class="info-value">26/05/2026</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Próximo Pago:</span>
-                            <span class="info-value highlight">30/04/2025</span>
+                            <span class="info-value highlight">26/11/2025</span>
                         </div>
                         <div class="on-info-row">
                             <span class="info-label">Monto Estimado:</span>
-                            <span class="info-value success">$2,090.00</span>
+                            <span class="info-value success">$36.00</span>
                         </div>
                     </div>
                     <button class="on-detail-btn" onclick="togglePaymentSchedule('t652d')">
@@ -634,10 +654,20 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr>
+                                    <td>26/11/2025</td>
+                                    <td>Interés</td>
+                                    <td>$36.00</td>
+                                </tr>
+                                <tr>
+                                    <td>26/02/2026</td>
+                                    <td>Interés</td>
+                                    <td>$36.00</td>
+                                </tr>
                                 <tr class="final-payment">
-                                    <td>30/04/2025</td>
+                                    <td>26/05/2026</td>
                                     <td>Interés + Amortización</td>
-                                    <td>$2,090.00</td>
+                                    <td>$2,036.00</td>
                                 </tr>
                             </tbody>
                         </table>
