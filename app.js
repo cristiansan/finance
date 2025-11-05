@@ -1,4 +1,98 @@
 // ===================================
+// Authentication System
+// ===================================
+
+// Password hash (SHA-256 hash of the password)
+// Default password: "finanzas2024"
+// To change: generate a new SHA-256 hash of your desired password
+const PASSWORD_HASH = 'a1750ecd44c6e1a9b1b843df4486adb56df3dd5ed425b4edd5219f9745ba3c8d';
+
+// Hash function using SHA-256
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
+// Check authentication on page load
+function checkAuthentication() {
+    const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+
+    if (isAuthenticated) {
+        showMainApp();
+    } else {
+        showLoginScreen();
+    }
+}
+
+// Show login screen
+function showLoginScreen() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+}
+
+// Show main application
+function showMainApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+}
+
+// Handle login
+async function handleLogin(event) {
+    event.preventDefault();
+
+    const passwordInput = document.getElementById('passwordInput');
+    const loginError = document.getElementById('loginError');
+    const password = passwordInput.value;
+
+    // Hash the entered password
+    const enteredHash = await hashPassword(password);
+
+    // Compare with stored hash
+    if (enteredHash === PASSWORD_HASH) {
+        // Successful login
+        sessionStorage.setItem('authenticated', 'true');
+        loginError.style.display = 'none';
+        passwordInput.value = '';
+        showMainApp();
+
+        // Initialize the application
+        initializeApp();
+    } else {
+        // Failed login
+        loginError.style.display = 'block';
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
+}
+
+// Handle logout
+function logout() {
+    if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+        sessionStorage.removeItem('authenticated');
+        showLoginScreen();
+
+        // Clear the password input
+        document.getElementById('passwordInput').value = '';
+    }
+}
+
+// Initialize application after successful login
+async function initializeApp() {
+    // Initialize crypto section first
+    await initializeCrypto();
+
+    // Initialize ON section
+    updateONDashboard();
+
+    // Update main dashboard
+    updateDashboard();
+}
+
+// ===================================
 // Data Management & LocalStorage
 // ===================================
 
@@ -621,13 +715,17 @@ function updateUpcomingPaymentsTimeline() {
 // Initialize App
 // ===================================
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize crypto section first
-    await initializeCrypto();
+document.addEventListener('DOMContentLoaded', () => {
+    // Check authentication status
+    checkAuthentication();
 
-    // Initialize ON section
-    updateONDashboard();
+    // Add login form event listener
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', handleLogin);
 
-    // Update main dashboard
-    updateDashboard();
+    // If already authenticated, initialize the app
+    const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+    if (isAuthenticated) {
+        initializeApp();
+    }
 });
