@@ -8,10 +8,40 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 <body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🔒 Acceso Seguro</h1>
+                <p>Ingresa tu contraseña para acceder a tu dashboard financiero</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="passwordInput">Contraseña</label>
+                    <input
+                        type="password"
+                        id="passwordInput"
+                        class="login-input"
+                        placeholder="Ingresa tu contraseña"
+                        autocomplete="current-password"
+                        required
+                    />
+                </div>
+                <button type="submit" class="login-btn">Ingresar</button>
+                <div id="loginError" class="login-error" style="display: none;">
+                    Contraseña incorrecta. Intenta nuevamente.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden until authenticated) -->
+    <div id="mainApp" class="main-app" style="display: none;">
     <div class="container">
         <!-- Header -->
         <header class="header">
             <h1>📊 Dashboard Financiero</h1>
+            <button id="logoutBtn" class="logout-btn" onclick="logout()">🔓 Cerrar Sesión</button>
         </header>
 
         <!-- Navigation -->
@@ -547,6 +577,7 @@
         <footer class="footer">
             <p>Dashboard Financiero Personal | Datos guardados localmente en tu navegador</p>
         </footer>
+    </div>
     </div>
 
     <script src="app.js"></script>
