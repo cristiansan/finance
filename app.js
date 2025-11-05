@@ -85,6 +85,9 @@ async function initializeApp() {
     // Initialize crypto section first
     await initializeCrypto();
 
+    // Initialize ACN stocks section
+    await initializeACN();
+
     // Initialize ON section
     updateONDashboard();
 
@@ -168,6 +171,9 @@ function updateDashboardSummary() {
     // Get ZCash value
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
 
+    // Get ACN value
+    const acnValue = ACN_SHARES * acnPrice;
+
     // Get ON annual income
     const onAnnualIncome = calculateAnnualONIncome();
 
@@ -176,7 +182,7 @@ function updateDashboardSummary() {
 
     // Total portfolio value (we'll use nominal value for ON)
     const onValue = 32050; // Sum of all ON holdings (10050 + 10000 + 10000 + 2000)
-    const totalValue = zcashUsdValue + onValue;
+    const totalValue = zcashUsdValue + acnValue + onValue;
 
     // Total annual income
     const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome;
@@ -208,6 +214,7 @@ function updateDashboardCharts() {
 
 function updatePortfolioChart() {
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
+    const acnValue = ACN_SHARES * acnPrice;
     const onValue = 32050;
 
     const ctx = document.getElementById('portfolioChart').getContext('2d');
@@ -219,11 +226,12 @@ function updatePortfolioChart() {
     portfolioChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['ZCash', 'Obligaciones Negociables'],
+            labels: ['ZCash', 'ACN Stocks', 'Obligaciones Negociables'],
             datasets: [{
-                data: [zcashUsdValue, onValue],
+                data: [zcashUsdValue, acnValue, onValue],
                 backgroundColor: [
                     '#f7931a',
+                    '#10b981',
                     '#3b82f6'
                 ],
                 borderWidth: 2,
@@ -709,6 +717,177 @@ function updateUpcomingPaymentsTimeline() {
             </div>
         </div>
     `).join('');
+}
+
+// ===================================
+// ACN Stocks Management
+// ===================================
+
+const ACN_SHARES = 34;
+const ACN_AVG_PRICE = 246.34; // Precio promedio de compra
+const ACN_TOTAL_INVESTED = ACN_SHARES * ACN_AVG_PRICE;
+let acnPrice = 0;
+let acnPreviousClose = 0;
+let acnLastUpdate = null;
+
+// Fetch ACN stock price from Yahoo Finance API
+async function fetchACNPrice() {
+    try {
+        // Try Yahoo Finance API via proxy
+        const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/ACN?interval=1d&range=5d');
+        const data = await response.json();
+
+        if (data.chart && data.chart.result && data.chart.result[0]) {
+            const result = data.chart.result[0];
+            const quote = result.meta;
+
+            acnPrice = quote.regularMarketPrice || quote.previousClose;
+            acnPreviousClose = quote.previousClose || acnPrice;
+            acnLastUpdate = new Date();
+
+            // Save to localStorage
+            localStorage.setItem('acnPrice', acnPrice);
+            localStorage.setItem('acnPreviousClose', acnPreviousClose);
+            localStorage.setItem('acnLastUpdate', acnLastUpdate.toISOString());
+
+            return acnPrice;
+        } else {
+            throw new Error('Invalid response from API');
+        }
+    } catch (error) {
+        console.error('Error fetching ACN price:', error);
+
+        // Try to load from localStorage as fallback
+        const savedPrice = localStorage.getItem('acnPrice');
+        if (savedPrice) {
+            acnPrice = parseFloat(savedPrice);
+            const savedPreviousClose = localStorage.getItem('acnPreviousClose');
+            if (savedPreviousClose) {
+                acnPreviousClose = parseFloat(savedPreviousClose);
+            }
+            const savedUpdate = localStorage.getItem('acnLastUpdate');
+            if (savedUpdate) {
+                acnLastUpdate = new Date(savedUpdate);
+            }
+            return acnPrice;
+        }
+
+        // If no saved data, use the average price as fallback
+        acnPrice = ACN_AVG_PRICE;
+        acnPreviousClose = ACN_AVG_PRICE;
+        return acnPrice;
+    }
+}
+
+// Calculate ACN investment metrics
+function calculateACNMetrics() {
+    const currentValue = ACN_SHARES * acnPrice;
+    const gainLoss = currentValue - ACN_TOTAL_INVESTED;
+    const gainLossPercent = ((gainLoss / ACN_TOTAL_INVESTED) * 100);
+
+    const dayChange = acnPrice - acnPreviousClose;
+    const dayChangePercent = ((dayChange / acnPreviousClose) * 100);
+    const dayChangeValue = ACN_SHARES * dayChange;
+
+    return {
+        currentValue,
+        gainLoss,
+        gainLossPercent,
+        dayChange,
+        dayChangePercent,
+        dayChangeValue
+    };
+}
+
+// Update ACN display
+function updateACNDisplay() {
+    const metrics = calculateACNMetrics();
+
+    // Update price display
+    if (acnPrice > 0) {
+        document.getElementById('acnPrice').textContent = formatCurrency(acnPrice);
+
+        // Update total value
+        document.getElementById('acnTotalValue').textContent = formatCurrency(metrics.currentValue);
+        document.getElementById('acnCurrentValueUsd').textContent = formatCurrency(metrics.currentValue);
+        document.getElementById('acnMarketValue').textContent = formatCurrency(metrics.currentValue);
+
+        // Update gain/loss
+        const gainLossElement = document.getElementById('acnGainLossUsd');
+        const gainLossPercentElement = document.getElementById('acnGainLossPercent');
+        const totalGainLossElement = document.getElementById('acnTotalGainLoss');
+
+        gainLossElement.textContent = formatCurrency(metrics.gainLoss);
+        gainLossPercentElement.textContent = (metrics.gainLossPercent >= 0 ? '+' : '') + metrics.gainLossPercent.toFixed(2) + '%';
+        totalGainLossElement.textContent = formatCurrency(metrics.gainLoss);
+
+        // Apply color based on gain/loss
+        if (metrics.gainLoss >= 0) {
+            gainLossElement.style.color = 'var(--success-color)';
+            gainLossPercentElement.style.color = 'var(--success-color)';
+            totalGainLossElement.style.color = 'var(--success-color)';
+        } else {
+            gainLossElement.style.color = 'var(--danger-color)';
+            gainLossPercentElement.style.color = 'var(--danger-color)';
+            totalGainLossElement.style.color = 'var(--danger-color)';
+        }
+
+        // Update day change
+        const dayChangeElement = document.getElementById('acnDayChangeUsd');
+        const dayChangePercentElement = document.getElementById('acnDayChange');
+
+        dayChangeElement.textContent = formatCurrency(metrics.dayChangeValue);
+        dayChangePercentElement.textContent = (metrics.dayChangePercent >= 0 ? '+' : '') + metrics.dayChangePercent.toFixed(2) + '%';
+
+        // Apply color based on day change
+        if (metrics.dayChangePercent >= 0) {
+            dayChangeElement.style.color = 'var(--success-color)';
+            dayChangePercentElement.style.color = 'var(--success-color)';
+        } else {
+            dayChangeElement.style.color = 'var(--danger-color)';
+            dayChangePercentElement.style.color = 'var(--danger-color)';
+        }
+
+        // Update last updated time
+        if (acnLastUpdate) {
+            const timeAgo = getTimeAgo(acnLastUpdate);
+            document.getElementById('acnLastUpdated').textContent = `Actualizado ${timeAgo}`;
+        }
+    } else {
+        document.getElementById('acnPrice').textContent = 'Error al cargar';
+        document.getElementById('acnTotalValue').textContent = 'Error';
+    }
+}
+
+// Refresh ACN data
+async function refreshACNData() {
+    const btn = document.querySelector('.crypto-refresh-btn[onclick="refreshACNData()"]');
+    const originalText = btn.textContent;
+
+    btn.textContent = '🔄 Actualizando...';
+    btn.disabled = true;
+
+    await fetchACNPrice();
+    updateACNDisplay();
+    updateDashboard(); // Update main dashboard with new ACN data
+
+    btn.textContent = originalText;
+    btn.disabled = false;
+
+    showNotification('Precio de ACN actualizado correctamente');
+}
+
+// Initialize ACN data
+async function initializeACN() {
+    await fetchACNPrice();
+    updateACNDisplay();
+
+    // Auto-refresh every 5 minutes
+    setInterval(async () => {
+        await fetchACNPrice();
+        updateACNDisplay();
+        updateDashboard();
+    }, 5 * 60 * 1000);
 }
 
 // ===================================

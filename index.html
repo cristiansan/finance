@@ -48,6 +48,7 @@
         <nav class="nav-tabs">
             <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
             <button class="tab-btn" data-tab="crypto">Cripto</button>
+            <button class="tab-btn" data-tab="acn">ACN</button>
             <button class="tab-btn" data-tab="on">ON</button>
         </nav>
 
@@ -236,6 +237,84 @@
                 <div class="summary-item">
                     <span class="summary-label">Valor Final en USD (estimado)</span>
                     <span class="summary-value" id="summaryFinalUsd">$0.00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ACN Stocks Section -->
+        <section id="acn" class="tab-content">
+            <!-- ACN Header Card -->
+            <div class="crypto-header">
+                <div class="crypto-main-info">
+                    <div class="crypto-balance">
+                        <div class="crypto-label">Acciones Accenture (ACN)</div>
+                        <div class="crypto-amount" id="acnShares">34 acciones</div>
+                        <div class="crypto-usd-value" id="acnTotalValue">
+                            <span class="loading-spinner"></span> USD
+                        </div>
+                    </div>
+                    <div class="crypto-price-info">
+                        <div class="crypto-label">Precio por Acción</div>
+                        <div class="crypto-current-price" id="acnPrice">
+                            <span class="loading-spinner"></span>
+                        </div>
+                        <div class="crypto-last-updated" id="acnLastUpdated">Cargando...</div>
+                        <button class="crypto-refresh-btn" onclick="refreshACNData()">🔄 Actualizar Precio</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Performance -->
+            <h3 style="color: var(--text-primary); margin-bottom: 16px; font-size: 20px;">📈 Rendimiento de la Inversión</h3>
+            <div class="earnings-grid">
+                <div class="earnings-card">
+                    <div class="earnings-period">Valor Actual</div>
+                    <div class="earnings-crypto" id="acnCurrentValue">34 acciones</div>
+                    <div class="earnings-usd" id="acnCurrentValueUsd">$0.00</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Precio Promedio de Compra</div>
+                    <div class="earnings-crypto">$246.34</div>
+                    <div class="earnings-usd" id="acnInvestedTotal">$8,375.56</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Ganancia/Pérdida</div>
+                    <div class="earnings-crypto" id="acnGainLossPercent">0.00%</div>
+                    <div class="earnings-usd" id="acnGainLossUsd">$0.00</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="earnings-period">Cambio del Día</div>
+                    <div class="earnings-crypto" id="acnDayChange">0.00%</div>
+                    <div class="earnings-usd" id="acnDayChangeUsd">$0.00</div>
+                </div>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="crypto-summary">
+                <h3>📊 Resumen de Inversión</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Cantidad de Acciones</span>
+                    <span class="summary-value">34 acciones</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Precio Promedio de Compra</span>
+                    <span class="summary-value">$246.34</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Inversión Total</span>
+                    <span class="summary-value">$8,375.56</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Valor Actual de Mercado</span>
+                    <span class="summary-value" id="acnMarketValue">$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Ganancia/Pérdida Total</span>
+                    <span class="summary-value" id="acnTotalGainLoss">$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Ticker</span>
+                    <span class="summary-value">ACN (NYSE)</span>
                 </div>
             </div>
         </section>
