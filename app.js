@@ -790,26 +790,36 @@ let acnPrice = 0;
 let acnPreviousClose = 0;
 let acnLastUpdate = null;
 
-// Fetch ACN stock price from Yahoo Finance API
+// Fetch ACN stock price from Financial Modeling Prep API (CORS-friendly)
 async function fetchACNPrice() {
     try {
-        // Try Yahoo Finance API via proxy
-        const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/ACN?interval=1d&range=5d');
+        // Use Financial Modeling Prep API - free tier with demo key
+        // Note: For production, get a free API key at financialmodelingprep.com
+        const response = await fetch('https://financialmodelingprep.com/api/v3/quote/ACN?apikey=demo');
         const data = await response.json();
 
-        if (data.chart && data.chart.result && data.chart.result[0]) {
-            const result = data.chart.result[0];
-            const quote = result.meta;
+        if (data && data.length > 0 && data[0].price) {
+            const quote = data[0];
 
-            acnPrice = quote.regularMarketPrice || quote.previousClose;
-            acnPreviousClose = quote.previousClose || acnPrice;
+            const newPrice = quote.price;
+            const newPreviousClose = quote.previousClose || newPrice;
+
+            // Only update if price actually changed (prevent unnecessary chart updates)
+            if (Math.abs(newPrice - acnPrice) > 0.01) {
+                acnPrice = newPrice;
+                acnPreviousClose = newPreviousClose;
+                acnLastUpdate = new Date();
+
+                // Save to localStorage
+                localStorage.setItem('acnPrice', acnPrice);
+                localStorage.setItem('acnPreviousClose', acnPreviousClose);
+                localStorage.setItem('acnLastUpdate', acnLastUpdate.toISOString());
+
+                return acnPrice;
+            }
+
+            // Price unchanged, just update the timestamp
             acnLastUpdate = new Date();
-
-            // Save to localStorage
-            localStorage.setItem('acnPrice', acnPrice);
-            localStorage.setItem('acnPreviousClose', acnPreviousClose);
-            localStorage.setItem('acnLastUpdate', acnLastUpdate.toISOString());
-
             return acnPrice;
         } else {
             throw new Error('Invalid response from API');
@@ -948,9 +958,14 @@ async function initializeACN() {
 
     // Auto-refresh every 5 minutes
     setInterval(async () => {
+        const oldPrice = acnPrice;
         await fetchACNPrice();
         updateACNDisplay();
-        updateDashboard();
+
+        // Only update dashboard charts if price actually changed
+        if (Math.abs(acnPrice - oldPrice) > 0.01) {
+            updateDashboard();
+        }
     }, 5 * 60 * 1000);
 }
 
