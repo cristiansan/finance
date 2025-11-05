@@ -41,6 +41,10 @@
         <!-- Header -->
         <header class="header">
             <h1>📊 Dashboard Financiero</h1>
+            <div class="header-total-value">
+                <div class="total-label">Valor Total Portfolio</div>
+                <div class="total-amount" id="dashTotalValue">Calculando...</div>
+            </div>
             <button id="logoutBtn" class="logout-btn" onclick="logout()">🔓 Cerrar Sesión</button>
         </header>
 
@@ -56,14 +60,7 @@
         <section id="dashboard" class="tab-content active">
             <!-- Portfolio Summary Cards -->
             <div class="summary-cards">
-                <div class="card">
-                    <div class="card-icon">💼</div>
-                    <div class="card-content">
-                        <h3>Valor Total Portfolio</h3>
-                        <p class="card-value" id="dashTotalValue">Calculando...</p>
-                    </div>
-                </div>
-                <div class="card">
+                <div class="card card-zcash">
                     <div class="card-icon">₿</div>
                     <div class="card-content">
                         <h3>ZCash</h3>
@@ -71,12 +68,20 @@
                         <small style="color: var(--text-secondary); font-size: 12px;" id="dashZcashAmount">20.92269137 ZEC</small>
                     </div>
                 </div>
-                <div class="card">
+                <div class="card card-on">
                     <div class="card-icon">📄</div>
                     <div class="card-content">
                         <h3>Obligaciones Negociables</h3>
                         <p class="card-value" id="dashONValue">Calculando...</p>
                         <small style="color: var(--text-secondary); font-size: 12px;">4 posiciones</small>
+                    </div>
+                </div>
+                <div class="card card-acn">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h3>ACN Stocks</h3>
+                        <p class="card-value" id="dashACNValue">Calculando...</p>
+                        <small style="color: var(--text-secondary); font-size: 12px;">34 acciones</small>
                     </div>
                 </div>
             </div>

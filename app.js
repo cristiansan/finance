@@ -194,7 +194,7 @@ function updateDashboardSummary() {
     document.getElementById('dashTotalValue').textContent = formatCurrency(totalValue);
     document.getElementById('dashZcashValue').textContent = formatCurrency(zcashUsdValue);
     document.getElementById('dashONValue').textContent = formatCurrency(onValue);
-    document.getElementById('dashAnnualIncome').textContent = formatCurrency(totalAnnualIncome);
+    document.getElementById('dashACNValue').textContent = formatCurrency(acnValue);
 
     // Update ZCash details
     document.getElementById('dashZcashPrice').textContent = formatCurrency(zcashPrice);
@@ -219,6 +219,11 @@ function updatePortfolioChart() {
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
     const acnValue = ACN_SHARES * acnPrice;
     const onValue = 32050;
+
+    // Skip if prices not loaded yet
+    if (zcashPrice === 0 || acnPrice === 0) {
+        return;
+    }
 
     const ctx = document.getElementById('portfolioChart').getContext('2d');
 
@@ -271,9 +276,15 @@ function updatePortfolioChart() {
 }
 
 function updateIncomeProjectionChart() {
+    // Skip if prices not loaded yet
+    if (zcashPrice === 0 || acnPrice === 0) {
+        return;
+    }
+
     const monthsLabels = [];
     const zcashIncome = [];
     const onIncome = [];
+    const acnIncome = [];
 
     for (let i = 0; i < 12; i++) {
         const date = new Date();
@@ -285,6 +296,9 @@ function updateIncomeProjectionChart() {
 
         // ON monthly income (simplified average)
         onIncome.push(calculateAnnualONIncome() / 12);
+
+        // ACN monthly dividend income
+        acnIncome.push(ACN_ANNUAL_DIVIDEND / 12);
     }
 
     const ctx = document.getElementById('incomeProjectionChart').getContext('2d');
@@ -308,8 +322,15 @@ function updateIncomeProjectionChart() {
                 {
                     label: 'ON',
                     data: onIncome,
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: '#10b981',
+                    borderWidth: 1
+                },
+                {
+                    label: 'ACN Dividendos',
+                    data: acnIncome,
+                    backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                    borderColor: '#a855f7',
                     borderWidth: 1
                 }
             ]
