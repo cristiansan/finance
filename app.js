@@ -286,19 +286,29 @@ function updateIncomeProjectionChart() {
     const onIncome = [];
     const acnIncome = [];
 
+    // Calculate monthly compound rate for ZCash (25% APR)
+    const monthlyRate = Math.pow(1 + APR, 1/12) - 1; // Compound monthly rate
+    let currentZcashBalance = ZCASH_BALANCE;
+
     for (let i = 0; i < 12; i++) {
         const date = new Date();
         date.setMonth(date.getMonth() + i);
         monthsLabels.push(date.toLocaleString('es', { month: 'short', year: '2-digit' }));
 
-        // ZCash monthly income
-        zcashIncome.push((ZCASH_BALANCE * APR / 12) * zcashPrice);
+        // ZCash monthly income with compound growth
+        const monthlyZcashGain = currentZcashBalance * monthlyRate;
+        zcashIncome.push(monthlyZcashGain * zcashPrice);
+        currentZcashBalance += monthlyZcashGain; // Compound the balance
 
-        // ON monthly income (simplified average)
-        onIncome.push(calculateAnnualONIncome() / 12);
+        // ON monthly income - get actual payments for this month
+        const onPayment = getONPaymentForMonth(date);
+        onIncome.push(onPayment);
 
-        // ACN monthly dividend income
-        acnIncome.push(ACN_ANNUAL_DIVIDEND / 12);
+        // ACN quarterly dividend income
+        const month = date.getMonth();
+        // ACN typically pays dividends in Feb, May, Aug, Nov (quarters)
+        const isDividendMonth = (month === 1 || month === 4 || month === 7 || month === 10);
+        acnIncome.push(isDividendMonth ? (ACN_ANNUAL_DIVIDEND / 4) : 0);
     }
 
     const ctx = document.getElementById('incomeProjectionChart').getContext('2d');
@@ -620,6 +630,24 @@ const obligacionesNegociables = [
         ]
     }
 ];
+
+// Get total ON payments for a specific month
+function getONPaymentForMonth(targetDate) {
+    let totalPayment = 0;
+    const targetMonth = targetDate.getMonth();
+    const targetYear = targetDate.getFullYear();
+
+    obligacionesNegociables.forEach(on => {
+        on.paymentDates.forEach(payment => {
+            const paymentDate = new Date(payment.date);
+            if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear) {
+                totalPayment += payment.amount;
+            }
+        });
+    });
+
+    return totalPayment;
+}
 
 // Toggle payment schedule visibility
 function togglePaymentSchedule(ticker) {
