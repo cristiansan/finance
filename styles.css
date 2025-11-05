@@ -371,6 +371,14 @@ body {
     padding: 24px;
     border-radius: 12px;
     box-shadow: var(--shadow);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container canvas {
+    flex: 1;
+    min-height: 300px;
 }
 
 .chart-container h3 {

@@ -347,7 +347,7 @@ function updateIncomeProjectionChart() {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',
@@ -381,6 +381,7 @@ function updateIncomeProjectionChart() {
                     beginAtZero: true,
                     ticks: {
                         color: '#94a3b8',
+                        stepSize: 100,
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
