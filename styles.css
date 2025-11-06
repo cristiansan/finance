@@ -379,6 +379,8 @@ body {
 .chart-container canvas {
     flex: 1;
     min-height: 300px;
+    max-height: 500px;
+    height: 400px !important;
 }
 
 .chart-container h3 {

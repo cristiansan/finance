@@ -215,6 +215,9 @@ function updateDashboardCharts() {
     updateIncomeProjectionChart();
 }
 
+// Cache last portfolio values to prevent unnecessary redraws
+let lastPortfolioValues = { zcash: 0, acn: 0, on: 0 };
+
 function updatePortfolioChart() {
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
     const acnValue = ACN_SHARES * acnPrice;
@@ -224,6 +227,16 @@ function updatePortfolioChart() {
     if (zcashPrice === 0 || acnPrice === 0) {
         return;
     }
+
+    // Skip if values haven't changed (prevent unnecessary redraws)
+    if (Math.abs(zcashUsdValue - lastPortfolioValues.zcash) < 1 &&
+        Math.abs(acnValue - lastPortfolioValues.acn) < 1 &&
+        Math.abs(onValue - lastPortfolioValues.on) < 1) {
+        return;
+    }
+
+    // Update cached values
+    lastPortfolioValues = { zcash: zcashUsdValue, acn: acnValue, on: onValue };
 
     const ctx = document.getElementById('portfolioChart').getContext('2d');
 
@@ -275,11 +288,23 @@ function updatePortfolioChart() {
     });
 }
 
+// Cache last prices used for income chart to prevent unnecessary redraws
+let lastIncomeChartPrices = { zcash: 0, acn: 0 };
+
 function updateIncomeProjectionChart() {
     // Skip if prices not loaded yet
     if (zcashPrice === 0 || acnPrice === 0) {
         return;
     }
+
+    // Skip if prices haven't changed (prevent unnecessary redraws)
+    if (Math.abs(zcashPrice - lastIncomeChartPrices.zcash) < 0.01 &&
+        Math.abs(acnPrice - lastIncomeChartPrices.acn) < 0.01) {
+        return;
+    }
+
+    // Update cached prices
+    lastIncomeChartPrices = { zcash: zcashPrice, acn: acnPrice };
 
     const monthsLabels = [];
     const zcashIncome = [];
@@ -790,19 +815,23 @@ let acnPrice = 0;
 let acnPreviousClose = 0;
 let acnLastUpdate = null;
 
-// Fetch ACN stock price from Financial Modeling Prep API (CORS-friendly)
+// Fetch ACN stock price from Finnhub API (free tier, CORS-friendly)
 async function fetchACNPrice() {
     try {
-        // Use Financial Modeling Prep API - free tier with demo key
-        // Note: For production, get a free API key at financialmodelingprep.com
-        const response = await fetch('https://financialmodelingprep.com/api/v3/quote/ACN?apikey=demo');
+        // Using Finnhub free API (no key required for basic quotes)
+        // Alternative free API without strict limits
+        const response = await fetch('https://finnhub.io/api/v1/quote?symbol=ACN&token=demo');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        if (data && data.length > 0 && data[0].price) {
-            const quote = data[0];
-
-            const newPrice = quote.price;
-            const newPreviousClose = quote.previousClose || newPrice;
+        // Finnhub returns: {c: current, pc: previous close, ...}
+        if (data && data.c && data.c > 0) {
+            const newPrice = data.c;
+            const newPreviousClose = data.pc || newPrice;
 
             // Only update if price actually changed (prevent unnecessary chart updates)
             if (Math.abs(newPrice - acnPrice) > 0.01) {
@@ -956,17 +985,8 @@ async function initializeACN() {
     await fetchACNPrice();
     updateACNDisplay();
 
-    // Auto-refresh every 5 minutes
-    setInterval(async () => {
-        const oldPrice = acnPrice;
-        await fetchACNPrice();
-        updateACNDisplay();
-
-        // Only update dashboard charts if price actually changed
-        if (Math.abs(acnPrice - oldPrice) > 0.01) {
-            updateDashboard();
-        }
-    }, 5 * 60 * 1000);
+    // NOTE: Auto-refresh disabled to prevent chart resize issues
+    // Users can manually refresh using the button
 }
 
 // ===================================
