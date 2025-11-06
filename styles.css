@@ -1166,6 +1166,14 @@ body {
     color: var(--text-secondary);
     font-size: 14px;
     margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.footer .logout-btn {
+    margin-top: 8px;
 }
 
 /* Responsive Design */
