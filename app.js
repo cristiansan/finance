@@ -312,6 +312,9 @@ function updateIncomeProjectionChart() {
     const monthlyRate = Math.pow(1 + APR, 1/12) - 1; // Compound monthly rate
     let currentZcashBalance = ZCASH_BALANCE;
 
+    // Track monthly totals to detect outliers
+    const monthlyTotals = [];
+
     for (let i = 0; i < 12; i++) {
         const date = new Date();
         date.setMonth(date.getMonth() + i);
@@ -319,7 +322,8 @@ function updateIncomeProjectionChart() {
 
         // ZCash monthly income with compound growth
         const monthlyZcashGain = currentZcashBalance * monthlyRate;
-        zcashIncome.push(monthlyZcashGain * zcashPrice);
+        const zcashValue = monthlyZcashGain * zcashPrice;
+        zcashIncome.push(zcashValue);
         currentZcashBalance += monthlyZcashGain; // Compound the balance
 
         // ON monthly income - get actual payments for this month
@@ -330,8 +334,27 @@ function updateIncomeProjectionChart() {
         const month = date.getMonth();
         // ACN typically pays dividends in Feb, May, Aug, Nov (quarters)
         const isDividendMonth = (month === 1 || month === 4 || month === 7 || month === 10);
-        acnIncome.push(isDividendMonth ? (ACN_ANNUAL_DIVIDEND / 4) : 0);
+        const acnValue = isDividendMonth ? (ACN_ANNUAL_DIVIDEND / 4) : 0;
+        acnIncome.push(acnValue);
+
+        // Track total for outlier detection
+        monthlyTotals.push(zcashValue + onPayment + acnValue);
     }
+
+    // Detect outliers and calculate appropriate Y-axis max
+    const maxTotal = Math.max(...monthlyTotals);
+    const normalMax = Math.max(...monthlyTotals.filter(val => val < 1500)); // Filter out large payments
+    const suggestedYMax = normalMax < 1000 ? 1000 : Math.ceil(normalMax / 100) * 100 + 200;
+
+    // Create dynamic colors for ON bars - highlight months with large payments
+    const onColors = onIncome.map((payment, index) => {
+        const total = monthlyTotals[index];
+        return total > suggestedYMax ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'; // Red for outliers, green for normal
+    });
+    const onBorderColors = onIncome.map((payment, index) => {
+        const total = monthlyTotals[index];
+        return total > suggestedYMax ? '#ef4444' : '#10b981';
+    });
 
     const ctx = document.getElementById('incomeProjectionChart').getContext('2d');
 
@@ -354,8 +377,8 @@ function updateIncomeProjectionChart() {
                 {
                     label: 'ON',
                     data: onIncome,
-                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                    borderColor: '#10b981',
+                    backgroundColor: onColors,
+                    borderColor: onBorderColors,
                     borderWidth: 1
                 },
                 {
@@ -384,6 +407,14 @@ function updateIncomeProjectionChart() {
                     callbacks: {
                         label: function(context) {
                             return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                        },
+                        footer: function(tooltipItems) {
+                            const monthIndex = tooltipItems[0].dataIndex;
+                            const total = monthlyTotals[monthIndex];
+                            if (total > suggestedYMax) {
+                                return '\n⚠️ Pago grande este mes: ' + formatCurrency(total) + '\n(Incluye vencimiento de ON)';
+                            }
+                            return '';
                         }
                     }
                 }
@@ -401,6 +432,7 @@ function updateIncomeProjectionChart() {
                 y: {
                     stacked: true,
                     beginAtZero: true,
+                    suggestedMax: suggestedYMax,
                     ticks: {
                         color: '#94a3b8',
                         stepSize: 100,
@@ -483,11 +515,12 @@ async function fetchZcashPrice() {
     }
 }
 
-// Calculate earnings based on APR
+// Calculate earnings based on APR (using compound interest)
 function calculateEarnings() {
-    const dailyRate = APR / 365;
-    const weeklyRate = dailyRate * 7;
-    const monthlyRate = APR / 12;
+    // Use compound interest formulas for accurate calculations
+    const dailyRate = Math.pow(1 + APR, 1/365) - 1;
+    const weeklyRate = Math.pow(1 + APR, 7/365) - 1;
+    const monthlyRate = Math.pow(1 + APR, 1/12) - 1;
     const annualRate = APR;
 
     return {
