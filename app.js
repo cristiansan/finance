@@ -123,9 +123,45 @@ async function initializeApp() {
 let portfolioChart = null;
 let incomeProjectionChart = null;
 
+// Portfolio values for header display
+let portfolioValues = {
+    total: 0,
+    zcash: 0,
+    acn: 0,
+    on: 32050
+};
+
 // ===================================
 // Tab Navigation
 // ===================================
+
+// Update header value based on active tab
+function updateHeaderForTab(tabName) {
+    const headerLabel = document.getElementById('headerLabel');
+    const headerValue = document.getElementById('headerValue');
+
+    switch(tabName) {
+        case 'dashboard':
+            headerLabel.textContent = 'Valor Total Portfolio';
+            headerValue.textContent = formatCurrency(portfolioValues.total);
+            break;
+        case 'crypto':
+            headerLabel.textContent = 'Valor ZCash';
+            headerValue.textContent = formatCurrency(portfolioValues.zcash);
+            break;
+        case 'acn':
+            headerLabel.textContent = 'Valor ACN';
+            headerValue.textContent = formatCurrency(portfolioValues.acn);
+            break;
+        case 'on':
+            headerLabel.textContent = 'Valor ON';
+            headerValue.textContent = formatCurrency(portfolioValues.on);
+            break;
+        default:
+            headerLabel.textContent = 'Valor Total Portfolio';
+            headerValue.textContent = formatCurrency(portfolioValues.total);
+    }
+}
 
 document.querySelectorAll('.tab-btn').forEach(button => {
     button.addEventListener('click', () => {
@@ -138,6 +174,9 @@ document.querySelectorAll('.tab-btn').forEach(button => {
         // Update content
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(tabName).classList.add('active');
+
+        // Update header value for the selected tab
+        updateHeaderForTab(tabName);
     });
 });
 
@@ -211,11 +250,20 @@ function updateDashboardSummary() {
     // Total annual income (ZCash staking + ON interest + ACN dividends)
     const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome + acnAnnualIncome;
 
+    // Update global portfolio values for header display
+    portfolioValues.zcash = zcashUsdValue;
+    portfolioValues.acn = acnValue;
+    portfolioValues.on = onValue;
+    portfolioValues.total = totalValue;
+
     // Update dashboard summary cards
-    document.getElementById('dashTotalValue').textContent = formatCurrency(totalValue);
     document.getElementById('dashZcashValue').textContent = formatCurrency(zcashUsdValue);
     document.getElementById('dashONValue').textContent = formatCurrency(onValue);
     document.getElementById('dashACNValue').textContent = formatCurrency(acnValue);
+
+    // Update header for current tab
+    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+    updateHeaderForTab(activeTab);
 
     // Update ZCash details
     document.getElementById('dashZcashPrice').textContent = formatCurrency(zcashPrice);
