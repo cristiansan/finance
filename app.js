@@ -2,9 +2,6 @@
 // Authentication System
 // ===================================
 
-// Password hash (SHA-256 hash of the password)
-// Default password: "finanzas2024"
-// To change: generate a new SHA-256 hash of your desired password
 const PASSWORD_HASH = 'a1750ecd44c6e1a9b1b843df4486adb56df3dd5ed425b4edd5219f9745ba3c8d';
 
 // Hash function using SHA-256
