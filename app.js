@@ -816,11 +816,12 @@ let acnPreviousClose = 0;
 let acnLastUpdate = null;
 
 // Fetch ACN stock price from Finnhub API (free tier, CORS-friendly)
+// NOTE: To get real-time prices, get a free API key at https://finnhub.io/register
+// Replace 'demo' with your API key in the URL below
 async function fetchACNPrice() {
     try {
-        // Using Finnhub free API (no key required for basic quotes)
-        // Alternative free API without strict limits
-        const response = await fetch('https://finnhub.io/api/v1/quote?symbol=ACN&token=demo');
+        const API_KEY = 'demo'; // Replace with your free Finnhub API key
+        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=ACN&token=${API_KEY}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -854,7 +855,9 @@ async function fetchACNPrice() {
             throw new Error('Invalid response from API');
         }
     } catch (error) {
-        console.error('Error fetching ACN price:', error);
+        console.warn('⚠️ No se pudo obtener precio en tiempo real de ACN.');
+        console.info('💡 Para obtener precios actualizados, registra una API key gratuita en: https://finnhub.io/register');
+        console.info('📝 Luego reemplaza "demo" en app.js línea 823 con tu API key');
 
         // Try to load from localStorage as fallback
         const savedPrice = localStorage.getItem('acnPrice');
@@ -868,12 +871,14 @@ async function fetchACNPrice() {
             if (savedUpdate) {
                 acnLastUpdate = new Date(savedUpdate);
             }
+            console.info('✓ Usando precio guardado anteriormente: $' + acnPrice.toFixed(2));
             return acnPrice;
         }
 
         // If no saved data, use the average price as fallback
         acnPrice = ACN_AVG_PRICE;
         acnPreviousClose = ACN_AVG_PRICE;
+        console.info('✓ Usando precio promedio de compra: $' + acnPrice.toFixed(2));
         return acnPrice;
     }
 }
@@ -982,11 +987,28 @@ async function refreshACNData() {
 
 // Initialize ACN data
 async function initializeACN() {
-    await fetchACNPrice();
+    // Load from localStorage if available, otherwise use average price
+    const savedPrice = localStorage.getItem('acnPrice');
+    if (savedPrice) {
+        acnPrice = parseFloat(savedPrice);
+        const savedPreviousClose = localStorage.getItem('acnPreviousClose');
+        if (savedPreviousClose) {
+            acnPreviousClose = parseFloat(savedPreviousClose);
+        }
+        const savedUpdate = localStorage.getItem('acnLastUpdate');
+        if (savedUpdate) {
+            acnLastUpdate = new Date(savedUpdate);
+        }
+    } else {
+        // Use average purchase price as default (no API call on startup)
+        acnPrice = ACN_AVG_PRICE;
+        acnPreviousClose = ACN_AVG_PRICE;
+    }
+
     updateACNDisplay();
 
     // NOTE: Auto-refresh disabled to prevent chart resize issues
-    // Users can manually refresh using the button
+    // Users can manually refresh using the button to get real-time prices
 }
 
 // ===================================
