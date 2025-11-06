@@ -82,6 +82,9 @@ async function initializeApp() {
     // Initialize crypto section first
     await initializeCrypto();
 
+    // Initialize ACN stocks section
+    await initializeACN();
+
     // Initialize ON section
     updateONDashboard();
 
@@ -165,24 +168,30 @@ function updateDashboardSummary() {
     // Get ZCash value
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
 
+    // Get ACN value
+    const acnValue = ACN_SHARES * acnPrice;
+
     // Get ON annual income
     const onAnnualIncome = calculateAnnualONIncome();
 
     // Calculate ZCash annual income
     const zcashAnnualIncome = (ZCASH_BALANCE * APR) * zcashPrice;
 
+    // Calculate ACN annual dividend income
+    const acnAnnualIncome = ACN_ANNUAL_DIVIDEND; // $184.96
+
     // Total portfolio value (we'll use nominal value for ON)
     const onValue = 32050; // Sum of all ON holdings (10050 + 10000 + 10000 + 2000)
-    const totalValue = zcashUsdValue + onValue;
+    const totalValue = zcashUsdValue + acnValue + onValue;
 
-    // Total annual income
-    const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome;
+    // Total annual income (ZCash staking + ON interest + ACN dividends)
+    const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome + acnAnnualIncome;
 
     // Update dashboard summary cards
     document.getElementById('dashTotalValue').textContent = formatCurrency(totalValue);
     document.getElementById('dashZcashValue').textContent = formatCurrency(zcashUsdValue);
     document.getElementById('dashONValue').textContent = formatCurrency(onValue);
-    document.getElementById('dashAnnualIncome').textContent = formatCurrency(totalAnnualIncome);
+    document.getElementById('dashACNValue').textContent = formatCurrency(acnValue);
 
     // Update ZCash details
     document.getElementById('dashZcashPrice').textContent = formatCurrency(zcashPrice);
@@ -203,9 +212,28 @@ function updateDashboardCharts() {
     updateIncomeProjectionChart();
 }
 
+// Cache last portfolio values to prevent unnecessary redraws
+let lastPortfolioValues = { zcash: 0, acn: 0, on: 0 };
+
 function updatePortfolioChart() {
     const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
+    const acnValue = ACN_SHARES * acnPrice;
     const onValue = 32050;
+
+    // Skip if prices not loaded yet
+    if (zcashPrice === 0 || acnPrice === 0) {
+        return;
+    }
+
+    // Skip if values haven't changed (prevent unnecessary redraws)
+    if (Math.abs(zcashUsdValue - lastPortfolioValues.zcash) < 1 &&
+        Math.abs(acnValue - lastPortfolioValues.acn) < 1 &&
+        Math.abs(onValue - lastPortfolioValues.on) < 1) {
+        return;
+    }
+
+    // Update cached values
+    lastPortfolioValues = { zcash: zcashUsdValue, acn: acnValue, on: onValue };
 
     const ctx = document.getElementById('portfolioChart').getContext('2d');
 
@@ -216,11 +244,12 @@ function updatePortfolioChart() {
     portfolioChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['ZCash', 'Obligaciones Negociables'],
+            labels: ['ZCash', 'ACN Stocks', 'Obligaciones Negociables'],
             datasets: [{
-                data: [zcashUsdValue, onValue],
+                data: [zcashUsdValue, acnValue, onValue],
                 backgroundColor: [
                     '#f7931a',
+                    '#10b981',
                     '#3b82f6'
                 ],
                 borderWidth: 2,
@@ -256,21 +285,52 @@ function updatePortfolioChart() {
     });
 }
 
+// Cache last prices used for income chart to prevent unnecessary redraws
+let lastIncomeChartPrices = { zcash: 0, acn: 0 };
+
 function updateIncomeProjectionChart() {
+    // Skip if prices not loaded yet
+    if (zcashPrice === 0 || acnPrice === 0) {
+        return;
+    }
+
+    // Skip if prices haven't changed (prevent unnecessary redraws)
+    if (Math.abs(zcashPrice - lastIncomeChartPrices.zcash) < 0.01 &&
+        Math.abs(acnPrice - lastIncomeChartPrices.acn) < 0.01) {
+        return;
+    }
+
+    // Update cached prices
+    lastIncomeChartPrices = { zcash: zcashPrice, acn: acnPrice };
+
     const monthsLabels = [];
     const zcashIncome = [];
     const onIncome = [];
+    const acnIncome = [];
+
+    // Calculate monthly compound rate for ZCash (25% APR)
+    const monthlyRate = Math.pow(1 + APR, 1/12) - 1; // Compound monthly rate
+    let currentZcashBalance = ZCASH_BALANCE;
 
     for (let i = 0; i < 12; i++) {
         const date = new Date();
         date.setMonth(date.getMonth() + i);
         monthsLabels.push(date.toLocaleString('es', { month: 'short', year: '2-digit' }));
 
-        // ZCash monthly income
-        zcashIncome.push((ZCASH_BALANCE * APR / 12) * zcashPrice);
+        // ZCash monthly income with compound growth
+        const monthlyZcashGain = currentZcashBalance * monthlyRate;
+        zcashIncome.push(monthlyZcashGain * zcashPrice);
+        currentZcashBalance += monthlyZcashGain; // Compound the balance
 
-        // ON monthly income (simplified average)
-        onIncome.push(calculateAnnualONIncome() / 12);
+        // ON monthly income - get actual payments for this month
+        const onPayment = getONPaymentForMonth(date);
+        onIncome.push(onPayment);
+
+        // ACN quarterly dividend income
+        const month = date.getMonth();
+        // ACN typically pays dividends in Feb, May, Aug, Nov (quarters)
+        const isDividendMonth = (month === 1 || month === 4 || month === 7 || month === 10);
+        acnIncome.push(isDividendMonth ? (ACN_ANNUAL_DIVIDEND / 4) : 0);
     }
 
     const ctx = document.getElementById('incomeProjectionChart').getContext('2d');
@@ -294,15 +354,22 @@ function updateIncomeProjectionChart() {
                 {
                     label: 'ON',
                     data: onIncome,
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: '#10b981',
+                    borderWidth: 1
+                },
+                {
+                    label: 'ACN Dividendos',
+                    data: acnIncome,
+                    backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                    borderColor: '#a855f7',
                     borderWidth: 1
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',
@@ -336,6 +403,7 @@ function updateIncomeProjectionChart() {
                     beginAtZero: true,
                     ticks: {
                         color: '#94a3b8',
+                        stepSize: 100,
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
@@ -533,53 +601,76 @@ const obligacionesNegociables = [
         ticker: 'VSCOD',
         name: 'Vista Oil & Gas',
         holdings: 10050,
-        couponRate: 0.085,
-        maturityDate: '2028-05-15',
+        couponRate: 0.065,
+        maturityDate: '2027-03-06',
         paymentDates: [
-            { date: '2025-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2025-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2026-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2026-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2027-05-15', type: 'Interés', amount: 4271.25 },
-            { date: '2027-11-15', type: 'Interés', amount: 4271.25 },
-            { date: '2028-05-15', type: 'Interés + Amortización', amount: 1009271.25 }
+            { date: '2026-03-06', type: 'Interés', amount: 321.70 },
+            { date: '2026-09-06', type: 'Interés', amount: 321.70 },
+            { date: '2027-03-06', type: 'Interés + Amortización', amount: 10371.70 }
         ]
     },
     {
         ticker: 'YM35D',
         name: 'YPF - Serie XXXV',
         holdings: 10000,
-        couponRate: 0.0775,
-        maturityDate: '2035-06-20',
+        couponRate: 0.0625,
+        maturityDate: '2027-03-01',
         paymentDates: [
-            { date: '2025-06-20', type: 'Interés', amount: 3875.00 },
-            { date: '2025-12-20', type: 'Interés', amount: 3875.00 },
-            { date: '2026-06-20', type: 'Interés', amount: 3875.00 }
+            { date: '2025-11-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-02-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-05-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-08-27', type: 'Interés', amount: 153.90 },
+            { date: '2026-11-27', type: 'Interés', amount: 153.90 },
+            { date: '2027-03-01', type: 'Interés + Amortización', amount: 10153.90 }
         ]
     },
     {
         ticker: 'YM37D',
         name: 'YPF - Serie XXXVII',
         holdings: 10000,
-        couponRate: 0.0825,
-        maturityDate: '2037-09-10',
+        couponRate: 0.07,
+        maturityDate: '2027-05-07',
         paymentDates: [
-            { date: '2025-03-10', type: 'Interés', amount: 4125.00 },
-            { date: '2025-09-10', type: 'Interés', amount: 4125.00 },
-            { date: '2026-03-10', type: 'Interés', amount: 4125.00 }
+            { date: '2025-11-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-02-09', type: 'Interés', amount: 172.30 },
+            { date: '2026-05-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-08-07', type: 'Interés', amount: 172.30 },
+            { date: '2026-11-09', type: 'Interés', amount: 172.30 },
+            { date: '2027-02-08', type: 'Interés', amount: 172.30 },
+            { date: '2027-05-07', type: 'Interés + Amortización', amount: 10172.30 }
         ]
     },
     {
         ticker: 'T652D',
-        name: 'Telecom Argentina',
+        name: 'Tarjeta Naranja',
         holdings: 2000,
-        couponRate: 0.09,
-        maturityDate: '2025-04-30',
+        couponRate: 0.074,
+        maturityDate: '2026-05-26',
         paymentDates: [
-            { date: '2025-04-30', type: 'Interés + Amortización', amount: 2090.00 }
+            { date: '2025-11-26', type: 'Interés', amount: 36.00 },
+            { date: '2026-02-26', type: 'Interés', amount: 36.00 },
+            { date: '2026-05-26', type: 'Interés + Amortización', amount: 2036.00 }
         ]
     }
 ];
+
+// Get total ON payments for a specific month
+function getONPaymentForMonth(targetDate) {
+    let totalPayment = 0;
+    const targetMonth = targetDate.getMonth();
+    const targetYear = targetDate.getFullYear();
+
+    obligacionesNegociables.forEach(on => {
+        on.paymentDates.forEach(payment => {
+            const paymentDate = new Date(payment.date);
+            if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear) {
+                totalPayment += payment.amount;
+            }
+        });
+    });
+
+    return totalPayment;
+}
 
 // Toggle payment schedule visibility
 function togglePaymentSchedule(ticker) {
@@ -706,6 +797,215 @@ function updateUpcomingPaymentsTimeline() {
             </div>
         </div>
     `).join('');
+}
+
+// ===================================
+// ACN Stocks Management
+// ===================================
+
+const ACN_SHARES = 34;
+const ACN_AVG_PRICE = 246.34; // Precio promedio de compra
+const ACN_TOTAL_INVESTED = ACN_SHARES * ACN_AVG_PRICE;
+const ACN_DIVIDEND_PER_SHARE = 5.44; // Dividendo anual por acción (USD)
+const ACN_ANNUAL_DIVIDEND = ACN_SHARES * ACN_DIVIDEND_PER_SHARE; // ~$184.96
+let acnPrice = 0;
+let acnPreviousClose = 0;
+let acnLastUpdate = null;
+
+// Fetch ACN stock price from Finnhub API (free tier, CORS-friendly)
+// NOTE: To get real-time prices, get a free API key at https://finnhub.io/register
+// Replace 'demo' with your API key in the URL below
+async function fetchACNPrice() {
+    try {
+        const API_KEY = 'demo'; // Replace with your free Finnhub API key
+        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=ACN&token=${API_KEY}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Finnhub returns: {c: current, pc: previous close, ...}
+        if (data && data.c && data.c > 0) {
+            const newPrice = data.c;
+            const newPreviousClose = data.pc || newPrice;
+
+            // Only update if price actually changed (prevent unnecessary chart updates)
+            if (Math.abs(newPrice - acnPrice) > 0.01) {
+                acnPrice = newPrice;
+                acnPreviousClose = newPreviousClose;
+                acnLastUpdate = new Date();
+
+                // Save to localStorage
+                localStorage.setItem('acnPrice', acnPrice);
+                localStorage.setItem('acnPreviousClose', acnPreviousClose);
+                localStorage.setItem('acnLastUpdate', acnLastUpdate.toISOString());
+
+                return acnPrice;
+            }
+
+            // Price unchanged, just update the timestamp
+            acnLastUpdate = new Date();
+            return acnPrice;
+        } else {
+            throw new Error('Invalid response from API');
+        }
+    } catch (error) {
+        console.warn('⚠️ No se pudo obtener precio en tiempo real de ACN.');
+        console.info('💡 Para obtener precios actualizados, registra una API key gratuita en: https://finnhub.io/register');
+        console.info('📝 Luego reemplaza "demo" en app.js línea 823 con tu API key');
+
+        // Try to load from localStorage as fallback
+        const savedPrice = localStorage.getItem('acnPrice');
+        if (savedPrice) {
+            acnPrice = parseFloat(savedPrice);
+            const savedPreviousClose = localStorage.getItem('acnPreviousClose');
+            if (savedPreviousClose) {
+                acnPreviousClose = parseFloat(savedPreviousClose);
+            }
+            const savedUpdate = localStorage.getItem('acnLastUpdate');
+            if (savedUpdate) {
+                acnLastUpdate = new Date(savedUpdate);
+            }
+            console.info('✓ Usando precio guardado anteriormente: $' + acnPrice.toFixed(2));
+            return acnPrice;
+        }
+
+        // If no saved data, use the average price as fallback
+        acnPrice = ACN_AVG_PRICE;
+        acnPreviousClose = ACN_AVG_PRICE;
+        console.info('✓ Usando precio promedio de compra: $' + acnPrice.toFixed(2));
+        return acnPrice;
+    }
+}
+
+// Calculate ACN investment metrics
+function calculateACNMetrics() {
+    const currentValue = ACN_SHARES * acnPrice;
+    const gainLoss = currentValue - ACN_TOTAL_INVESTED;
+    const gainLossPercent = ((gainLoss / ACN_TOTAL_INVESTED) * 100);
+
+    const dayChange = acnPrice - acnPreviousClose;
+    const dayChangePercent = ((dayChange / acnPreviousClose) * 100);
+    const dayChangeValue = ACN_SHARES * dayChange;
+
+    return {
+        currentValue,
+        gainLoss,
+        gainLossPercent,
+        dayChange,
+        dayChangePercent,
+        dayChangeValue
+    };
+}
+
+// Update ACN display
+function updateACNDisplay() {
+    const metrics = calculateACNMetrics();
+
+    // Update price display
+    if (acnPrice > 0) {
+        document.getElementById('acnPrice').textContent = formatCurrency(acnPrice);
+
+        // Update total value
+        document.getElementById('acnTotalValue').textContent = formatCurrency(metrics.currentValue);
+        document.getElementById('acnCurrentValueUsd').textContent = formatCurrency(metrics.currentValue);
+        document.getElementById('acnMarketValue').textContent = formatCurrency(metrics.currentValue);
+
+        // Update gain/loss
+        const gainLossElement = document.getElementById('acnGainLossUsd');
+        const gainLossPercentElement = document.getElementById('acnGainLossPercent');
+        const totalGainLossElement = document.getElementById('acnTotalGainLoss');
+
+        gainLossElement.textContent = formatCurrency(metrics.gainLoss);
+        gainLossPercentElement.textContent = (metrics.gainLossPercent >= 0 ? '+' : '') + metrics.gainLossPercent.toFixed(2) + '%';
+        totalGainLossElement.textContent = formatCurrency(metrics.gainLoss);
+
+        // Apply color based on gain/loss
+        if (metrics.gainLoss >= 0) {
+            gainLossElement.style.color = 'var(--success-color)';
+            gainLossPercentElement.style.color = 'var(--success-color)';
+            totalGainLossElement.style.color = 'var(--success-color)';
+        } else {
+            gainLossElement.style.color = 'var(--danger-color)';
+            gainLossPercentElement.style.color = 'var(--danger-color)';
+            totalGainLossElement.style.color = 'var(--danger-color)';
+        }
+
+        // Update day change
+        const dayChangeElement = document.getElementById('acnDayChangeUsd');
+        const dayChangePercentElement = document.getElementById('acnDayChange');
+
+        dayChangeElement.textContent = formatCurrency(metrics.dayChangeValue);
+        dayChangePercentElement.textContent = (metrics.dayChangePercent >= 0 ? '+' : '') + metrics.dayChangePercent.toFixed(2) + '%';
+
+        // Apply color based on day change
+        if (metrics.dayChangePercent >= 0) {
+            dayChangeElement.style.color = 'var(--success-color)';
+            dayChangePercentElement.style.color = 'var(--success-color)';
+        } else {
+            dayChangeElement.style.color = 'var(--danger-color)';
+            dayChangePercentElement.style.color = 'var(--danger-color)';
+        }
+
+        // Update last updated time
+        if (acnLastUpdate) {
+            const timeAgo = getTimeAgo(acnLastUpdate);
+            document.getElementById('acnLastUpdated').textContent = `Actualizado ${timeAgo}`;
+        }
+
+        // Update dividend yield based on current price
+        const dividendYield = (ACN_DIVIDEND_PER_SHARE / acnPrice) * 100;
+        document.getElementById('acnDividendYield').textContent = `~${dividendYield.toFixed(2)}%`;
+    } else {
+        document.getElementById('acnPrice').textContent = 'Error al cargar';
+        document.getElementById('acnTotalValue').textContent = 'Error';
+    }
+}
+
+// Refresh ACN data
+async function refreshACNData() {
+    const btn = document.querySelector('.crypto-refresh-btn[onclick="refreshACNData()"]');
+    const originalText = btn.textContent;
+
+    btn.textContent = '🔄 Actualizando...';
+    btn.disabled = true;
+
+    await fetchACNPrice();
+    updateACNDisplay();
+    updateDashboard(); // Update main dashboard with new ACN data
+
+    btn.textContent = originalText;
+    btn.disabled = false;
+
+    showNotification('Precio de ACN actualizado correctamente');
+}
+
+// Initialize ACN data
+async function initializeACN() {
+    // Load from localStorage if available, otherwise use average price
+    const savedPrice = localStorage.getItem('acnPrice');
+    if (savedPrice) {
+        acnPrice = parseFloat(savedPrice);
+        const savedPreviousClose = localStorage.getItem('acnPreviousClose');
+        if (savedPreviousClose) {
+            acnPreviousClose = parseFloat(savedPreviousClose);
+        }
+        const savedUpdate = localStorage.getItem('acnLastUpdate');
+        if (savedUpdate) {
+            acnLastUpdate = new Date(savedUpdate);
+        }
+    } else {
+        // Use average purchase price as default (no API call on startup)
+        acnPrice = ACN_AVG_PRICE;
+        acnPreviousClose = ACN_AVG_PRICE;
+    }
+
+    updateACNDisplay();
+
+    // NOTE: Auto-refresh disabled to prevent chart resize issues
+    // Users can manually refresh using the button to get real-time prices
 }
 
 // ===================================
