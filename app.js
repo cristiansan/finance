@@ -483,11 +483,12 @@ async function fetchZcashPrice() {
     }
 }
 
-// Calculate earnings based on APR
+// Calculate earnings based on APR (using compound interest)
 function calculateEarnings() {
-    const dailyRate = APR / 365;
-    const weeklyRate = dailyRate * 7;
-    const monthlyRate = APR / 12;
+    // Use compound interest formulas for accurate calculations
+    const dailyRate = Math.pow(1 + APR, 1/365) - 1;
+    const weeklyRate = Math.pow(1 + APR, 7/365) - 1;
+    const monthlyRate = Math.pow(1 + APR, 1/12) - 1;
     const annualRate = APR;
 
     return {
