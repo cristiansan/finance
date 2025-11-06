@@ -16,13 +16,28 @@ async function hashPassword(password) {
 
 // Check authentication on page load
 function checkAuthentication() {
-    const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+    const authData = localStorage.getItem('authData');
 
-    if (isAuthenticated) {
-        showMainApp();
-    } else {
-        showLoginScreen();
+    if (authData) {
+        try {
+            const { authenticated, expiresAt } = JSON.parse(authData);
+            const now = new Date().getTime();
+
+            // Check if authenticated and not expired
+            if (authenticated === true && now < expiresAt) {
+                showMainApp();
+                return;
+            } else {
+                // Session expired, clear it
+                localStorage.removeItem('authData');
+            }
+        } catch (error) {
+            // Invalid data, clear it
+            localStorage.removeItem('authData');
+        }
     }
+
+    showLoginScreen();
 }
 
 // Show login screen
@@ -50,8 +65,17 @@ async function handleLogin(event) {
 
     // Compare with stored hash
     if (enteredHash === PASSWORD_HASH) {
-        // Successful login
-        sessionStorage.setItem('authenticated', 'true');
+        // Successful login - save with 1 month expiration
+        const now = new Date().getTime();
+        const oneMonthInMs = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+        const expiresAt = now + oneMonthInMs;
+
+        const authData = {
+            authenticated: true,
+            expiresAt: expiresAt
+        };
+
+        localStorage.setItem('authData', JSON.stringify(authData));
         loginError.style.display = 'none';
         passwordInput.value = '';
         showMainApp();
@@ -69,7 +93,7 @@ async function handleLogin(event) {
 // Handle logout
 function logout() {
     if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-        sessionStorage.removeItem('authenticated');
+        localStorage.removeItem('authData');
         showLoginScreen();
 
         // Clear the password input
@@ -1058,8 +1082,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm.addEventListener('submit', handleLogin);
 
     // If already authenticated, initialize the app
-    const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
-    if (isAuthenticated) {
-        initializeApp();
+    const authData = localStorage.getItem('authData');
+    if (authData) {
+        try {
+            const { authenticated, expiresAt } = JSON.parse(authData);
+            const now = new Date().getTime();
+            if (authenticated === true && now < expiresAt) {
+                initializeApp();
+            }
+        } catch (error) {
+            // Invalid auth data, ignore
+        }
     }
 });
