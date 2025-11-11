@@ -549,7 +549,7 @@ function formatDate(dateString) {
 // ===================================
 
 const FDUSD_BALANCE = 12832; // FDUSD balance in USD
-const APR = 0.25; // 25%
+const APR = 0.1129; // 11.29%
 let fdusdPrice = 1.00; // FDUSD is a stablecoin pegged to $1
 let lastPriceUpdate = null;
 
