@@ -60,11 +60,11 @@
             <!-- Portfolio Summary Cards -->
             <div class="summary-cards">
                 <div class="card card-zcash">
-                    <div class="card-icon">₿</div>
+                    <div class="card-icon">💵</div>
                     <div class="card-content">
-                        <h3>ZCash</h3>
-                        <p class="card-value" id="dashZcashValue">Calculando...</p>
-                        <small style="color: var(--text-secondary); font-size: 12px;" id="dashZcashAmount">20.92269137 ZEC</small>
+                        <h3>FDUSD</h3>
+                        <p class="card-value" id="dashFdusdValue">Calculando...</p>
+                        <small style="color: var(--text-secondary); font-size: 12px;" id="dashFdusdAmount">12,832 FDUSD</small>
                     </div>
                 </div>
                 <div class="card card-on">
@@ -99,23 +99,23 @@
 
             <!-- Investment Summary -->
             <div class="investment-summary-grid">
-                <!-- ZCash Summary -->
+                <!-- FDUSD Summary -->
                 <div class="investment-card">
                     <div class="investment-header">
-                        <h3>💎 ZCash Holdings</h3>
+                        <h3>💵 FDUSD Holdings</h3>
                     </div>
                     <div class="investment-body">
                         <div class="investment-row">
                             <span class="inv-label">Balance:</span>
-                            <span class="inv-value">20.92269137 ZEC</span>
+                            <span class="inv-value">12,832 FDUSD</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Precio Actual:</span>
-                            <span class="inv-value" id="dashZcashPrice">Cargando...</span>
+                            <span class="inv-value" id="dashFdusdPrice">$1.00</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Valor USD:</span>
-                            <span class="inv-value highlight" id="dashZcashUSD">$0.00</span>
+                            <span class="inv-value highlight" id="dashFdusdUSD">$0.00</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">APR:</span>
@@ -123,11 +123,11 @@
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Ingresos Anuales:</span>
-                            <span class="inv-value success" id="dashZcashAnnual">$0.00</span>
+                            <span class="inv-value success" id="dashFdusdAnnual">$0.00</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Ingresos Mensuales:</span>
-                            <span class="inv-value" id="dashZcashMonthly">$0.00</span>
+                            <span class="inv-value" id="dashFdusdMonthly">$0.00</span>
                         </div>
                     </div>
                 </div>
@@ -173,20 +173,20 @@
             <div class="crypto-header">
                 <div class="crypto-main-info">
                     <div class="crypto-balance">
-                        <div class="crypto-label">Balance ZCash</div>
-                        <div class="crypto-amount" id="zcashBalance">20.92269137 ZEC</div>
-                        <div class="crypto-usd-value" id="zcashUsdValue">
+                        <div class="crypto-label">Balance FDUSD</div>
+                        <div class="crypto-amount" id="fdusdBalance">12,832 FDUSD</div>
+                        <div class="crypto-usd-value" id="fdusdUsdValue">
                             <span class="loading-spinner"></span> USD
                         </div>
                         <div class="crypto-apr-badge">APR 25%</div>
                     </div>
                     <div class="crypto-price-info">
-                        <div class="crypto-label">Precio Actual</div>
-                        <div class="crypto-current-price" id="zcashPrice">
+                        <div class="crypto-label">Precio Actual (Stablecoin)</div>
+                        <div class="crypto-current-price" id="fdusdPrice">
                             <span class="loading-spinner"></span>
                         </div>
                         <div class="crypto-last-updated" id="lastUpdated">Cargando...</div>
-                        <button class="crypto-refresh-btn" onclick="refreshCryptoData()">🔄 Actualizar Precio</button>
+                        <button class="crypto-refresh-btn" onclick="refreshCryptoData()">🔄 Actualizar</button>
                     </div>
                 </div>
             </div>
@@ -221,18 +221,18 @@
                 <h3>📊 Resumen Anual</h3>
                 <div class="summary-item">
                     <span class="summary-label">Balance Inicial</span>
-                    <span class="summary-value" id="summaryInitial">20.92269137 ZEC</span>
+                    <span class="summary-value" id="summaryInitial">$12,832 FDUSD</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Ganancias Anuales (25% APR)</span>
-                    <span class="summary-value" id="summaryYearlyGains">0.00 ZEC</span>
+                    <span class="summary-value" id="summaryYearlyGains">$0.00</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Balance Final (1 año)</span>
-                    <span class="summary-value" id="summaryFinalBalance">0.00 ZEC</span>
+                    <span class="summary-value" id="summaryFinalBalance">$0.00</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Valor Final en USD (estimado)</span>
+                    <span class="summary-label">Valor Final en USD</span>
                     <span class="summary-value" id="summaryFinalUsd">$0.00</span>
                 </div>
             </div>

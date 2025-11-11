@@ -126,7 +126,7 @@ let incomeProjectionChart = null;
 // Portfolio values for header display
 let portfolioValues = {
     total: 0,
-    zcash: 0,
+    fdusd: 0,
     acn: 0,
     on: 32050
 };
@@ -146,8 +146,8 @@ function updateHeaderForTab(tabName) {
             headerValue.textContent = formatCurrency(portfolioValues.total);
             break;
         case 'crypto':
-            headerLabel.textContent = 'Valor ZCash';
-            headerValue.textContent = formatCurrency(portfolioValues.zcash);
+            headerLabel.textContent = 'Valor FDUSD';
+            headerValue.textContent = formatCurrency(portfolioValues.fdusd);
             break;
         case 'acn':
             headerLabel.textContent = 'Valor ACN';
@@ -228,8 +228,8 @@ function updateDashboard() {
 }
 
 function updateDashboardSummary() {
-    // Get ZCash value
-    const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
+    // Get FDUSD value
+    const fdusdUsdValue = FDUSD_BALANCE * fdusdPrice;
 
     // Get ACN value
     const acnValue = ACN_SHARES * acnPrice;
@@ -237,27 +237,27 @@ function updateDashboardSummary() {
     // Get ON annual income
     const onAnnualIncome = calculateAnnualONIncome();
 
-    // Calculate ZCash annual income
-    const zcashAnnualIncome = (ZCASH_BALANCE * APR) * zcashPrice;
+    // Calculate FDUSD annual income
+    const fdusdAnnualIncome = (FDUSD_BALANCE * APR) * fdusdPrice;
 
     // Calculate ACN annual dividend income
     const acnAnnualIncome = ACN_ANNUAL_DIVIDEND; // $184.96
 
     // Total portfolio value (we'll use nominal value for ON)
     const onValue = 32050; // Sum of all ON holdings (10050 + 10000 + 10000 + 2000)
-    const totalValue = zcashUsdValue + acnValue + onValue;
+    const totalValue = fdusdUsdValue + acnValue + onValue;
 
-    // Total annual income (ZCash staking + ON interest + ACN dividends)
-    const totalAnnualIncome = zcashAnnualIncome + onAnnualIncome + acnAnnualIncome;
+    // Total annual income (FDUSD staking + ON interest + ACN dividends)
+    const totalAnnualIncome = fdusdAnnualIncome + onAnnualIncome + acnAnnualIncome;
 
     // Update global portfolio values for header display
-    portfolioValues.zcash = zcashUsdValue;
+    portfolioValues.fdusd = fdusdUsdValue;
     portfolioValues.acn = acnValue;
     portfolioValues.on = onValue;
     portfolioValues.total = totalValue;
 
     // Update dashboard summary cards
-    document.getElementById('dashZcashValue').textContent = formatCurrency(zcashUsdValue);
+    document.getElementById('dashFdusdValue').textContent = formatCurrency(fdusdUsdValue);
     document.getElementById('dashONValue').textContent = formatCurrency(onValue);
     document.getElementById('dashACNValue').textContent = formatCurrency(acnValue);
 
@@ -265,11 +265,11 @@ function updateDashboardSummary() {
     const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
     updateHeaderForTab(activeTab);
 
-    // Update ZCash details
-    document.getElementById('dashZcashPrice').textContent = formatCurrency(zcashPrice);
-    document.getElementById('dashZcashUSD').textContent = formatCurrency(zcashUsdValue);
-    document.getElementById('dashZcashAnnual').textContent = formatCurrency(zcashAnnualIncome);
-    document.getElementById('dashZcashMonthly').textContent = formatCurrency(zcashAnnualIncome / 12);
+    // Update FDUSD details
+    document.getElementById('dashFdusdPrice').textContent = formatCurrency(fdusdPrice);
+    document.getElementById('dashFdusdUSD').textContent = formatCurrency(fdusdUsdValue);
+    document.getElementById('dashFdusdAnnual').textContent = formatCurrency(fdusdAnnualIncome);
+    document.getElementById('dashFdusdMonthly').textContent = formatCurrency(fdusdAnnualIncome / 12);
 
     // Update ON details
     const nextPayment = getNextPayment();
@@ -285,27 +285,27 @@ function updateDashboardCharts() {
 }
 
 // Cache last portfolio values to prevent unnecessary redraws
-let lastPortfolioValues = { zcash: 0, acn: 0, on: 0 };
+let lastPortfolioValues = { fdusd: 0, acn: 0, on: 0 };
 
 function updatePortfolioChart() {
-    const zcashUsdValue = ZCASH_BALANCE * zcashPrice;
+    const fdusdUsdValue = FDUSD_BALANCE * fdusdPrice;
     const acnValue = ACN_SHARES * acnPrice;
     const onValue = 32050;
 
     // Skip if prices not loaded yet
-    if (zcashPrice === 0 || acnPrice === 0) {
+    if (fdusdPrice === 0 || acnPrice === 0) {
         return;
     }
 
     // Skip if values haven't changed (prevent unnecessary redraws)
-    if (Math.abs(zcashUsdValue - lastPortfolioValues.zcash) < 1 &&
+    if (Math.abs(fdusdUsdValue - lastPortfolioValues.fdusd) < 1 &&
         Math.abs(acnValue - lastPortfolioValues.acn) < 1 &&
         Math.abs(onValue - lastPortfolioValues.on) < 1) {
         return;
     }
 
     // Update cached values
-    lastPortfolioValues = { zcash: zcashUsdValue, acn: acnValue, on: onValue };
+    lastPortfolioValues = { fdusd: fdusdUsdValue, acn: acnValue, on: onValue };
 
     const ctx = document.getElementById('portfolioChart').getContext('2d');
 
@@ -316,9 +316,9 @@ function updatePortfolioChart() {
     portfolioChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['ZCash', 'ACN Stocks', 'Obligaciones Negociables'],
+            labels: ['FDUSD', 'ACN Stocks', 'Obligaciones Negociables'],
             datasets: [{
-                data: [zcashUsdValue, acnValue, onValue],
+                data: [fdusdUsdValue, acnValue, onValue],
                 backgroundColor: [
                     '#f7931a',
                     '#10b981',
@@ -358,31 +358,31 @@ function updatePortfolioChart() {
 }
 
 // Cache last prices used for income chart to prevent unnecessary redraws
-let lastIncomeChartPrices = { zcash: 0, acn: 0 };
+let lastIncomeChartPrices = { fdusd: 0, acn: 0 };
 
 function updateIncomeProjectionChart() {
     // Skip if prices not loaded yet
-    if (zcashPrice === 0 || acnPrice === 0) {
+    if (fdusdPrice === 0 || acnPrice === 0) {
         return;
     }
 
     // Skip if prices haven't changed (prevent unnecessary redraws)
-    if (Math.abs(zcashPrice - lastIncomeChartPrices.zcash) < 0.01 &&
+    if (Math.abs(fdusdPrice - lastIncomeChartPrices.fdusd) < 0.01 &&
         Math.abs(acnPrice - lastIncomeChartPrices.acn) < 0.01) {
         return;
     }
 
     // Update cached prices
-    lastIncomeChartPrices = { zcash: zcashPrice, acn: acnPrice };
+    lastIncomeChartPrices = { fdusd: fdusdPrice, acn: acnPrice };
 
     const monthsLabels = [];
-    const zcashIncome = [];
+    const fdusdIncome = [];
     const onIncome = [];
     const acnIncome = [];
 
-    // Calculate monthly compound rate for ZCash (25% APR)
+    // Calculate monthly compound rate for FDUSD (25% APR)
     const monthlyRate = Math.pow(1 + APR, 1/12) - 1; // Compound monthly rate
-    let currentZcashBalance = ZCASH_BALANCE;
+    let currentFdusdBalance = FDUSD_BALANCE;
 
     // Track monthly totals to detect outliers
     const monthlyTotals = [];
@@ -392,11 +392,11 @@ function updateIncomeProjectionChart() {
         date.setMonth(date.getMonth() + i);
         monthsLabels.push(date.toLocaleString('es', { month: 'short', year: '2-digit' }));
 
-        // ZCash monthly income with compound growth
-        const monthlyZcashGain = currentZcashBalance * monthlyRate;
-        const zcashValue = monthlyZcashGain * zcashPrice;
-        zcashIncome.push(zcashValue);
-        currentZcashBalance += monthlyZcashGain; // Compound the balance
+        // FDUSD monthly income with compound growth
+        const monthlyFdusdGain = currentFdusdBalance * monthlyRate;
+        const fdusdValue = monthlyFdusdGain * fdusdPrice;
+        fdusdIncome.push(fdusdValue);
+        currentFdusdBalance += monthlyFdusdGain; // Compound the balance
 
         // ON monthly income - get actual payments for this month
         const onPayment = getONPaymentForMonth(date);
@@ -410,7 +410,7 @@ function updateIncomeProjectionChart() {
         acnIncome.push(acnValue);
 
         // Track total for outlier detection
-        monthlyTotals.push(zcashValue + onPayment + acnValue);
+        monthlyTotals.push(fdusdValue + onPayment + acnValue);
     }
 
     // Detect outliers and calculate appropriate Y-axis max
@@ -440,8 +440,8 @@ function updateIncomeProjectionChart() {
             labels: monthsLabels,
             datasets: [
                 {
-                    label: 'ZCash',
-                    data: zcashIncome,
+                    label: 'FDUSD',
+                    data: fdusdIncome,
                     backgroundColor: 'rgba(247, 147, 26, 0.7)',
                     borderColor: '#f7931a',
                     borderWidth: 1
@@ -548,49 +548,22 @@ function formatDate(dateString) {
 // Crypto Management
 // ===================================
 
-const ZCASH_BALANCE = 20.92269137;
+const FDUSD_BALANCE = 12832; // FDUSD balance in USD
 const APR = 0.25; // 25%
-let zcashPrice = 0;
+let fdusdPrice = 1.00; // FDUSD is a stablecoin pegged to $1
 let lastPriceUpdate = null;
 
-// Fetch ZCash price from CoinGecko API
-async function fetchZcashPrice() {
-    try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=zcash&vs_currencies=usd');
-        const data = await response.json();
+// Fetch FDUSD price (stablecoin pegged to $1)
+async function fetchFdusdPrice() {
+    // FDUSD is a stablecoin pegged to $1, no need to fetch from API
+    fdusdPrice = 1.00;
+    lastPriceUpdate = new Date();
 
-        if (data.zcash && data.zcash.usd) {
-            zcashPrice = data.zcash.usd;
-            lastPriceUpdate = new Date();
+    // Save to localStorage
+    localStorage.setItem('fdusdPrice', fdusdPrice);
+    localStorage.setItem('lastPriceUpdate', lastPriceUpdate.toISOString());
 
-            // Save to localStorage
-            localStorage.setItem('zcashPrice', zcashPrice);
-            localStorage.setItem('lastPriceUpdate', lastPriceUpdate.toISOString());
-
-            return zcashPrice;
-        } else {
-            throw new Error('Invalid response from API');
-        }
-    } catch (error) {
-        console.error('Error fetching ZCash price:', error);
-
-        // Try to load from localStorage as fallback
-        const savedPrice = localStorage.getItem('zcashPrice');
-        if (savedPrice) {
-            zcashPrice = parseFloat(savedPrice);
-            const savedUpdate = localStorage.getItem('lastPriceUpdate');
-            if (savedUpdate) {
-                lastPriceUpdate = new Date(savedUpdate);
-            }
-            return zcashPrice;
-        }
-
-        // Use default price as last resort fallback (approximately current market price)
-        console.warn('Using default ZCash price as fallback');
-        zcashPrice = 54.50; // Default fallback price
-        lastPriceUpdate = new Date();
-        return zcashPrice;
-    }
+    return fdusdPrice;
 }
 
 // Calculate earnings based on APR (using compound interest)
@@ -602,10 +575,10 @@ function calculateEarnings() {
     const annualRate = APR;
 
     return {
-        daily: ZCASH_BALANCE * dailyRate,
-        weekly: ZCASH_BALANCE * weeklyRate,
-        monthly: ZCASH_BALANCE * monthlyRate,
-        annual: ZCASH_BALANCE * annualRate
+        daily: FDUSD_BALANCE * dailyRate,
+        weekly: FDUSD_BALANCE * weeklyRate,
+        monthly: FDUSD_BALANCE * monthlyRate,
+        annual: FDUSD_BALANCE * annualRate
     };
 }
 
@@ -613,44 +586,38 @@ function calculateEarnings() {
 function updateCryptoDisplay() {
     const earnings = calculateEarnings();
 
-    // Update price display
-    if (zcashPrice > 0) {
-        document.getElementById('zcashPrice').textContent = formatCurrency(zcashPrice);
+    // Update price display (FDUSD is always $1)
+    document.getElementById('fdusdPrice').textContent = formatCurrency(fdusdPrice);
 
-        // Update USD value
-        const totalUsdValue = ZCASH_BALANCE * zcashPrice;
-        document.getElementById('zcashUsdValue').textContent = formatCurrency(totalUsdValue);
+    // Update USD value (FDUSD is 1:1 with USD)
+    const totalUsdValue = FDUSD_BALANCE * fdusdPrice;
+    document.getElementById('fdusdUsdValue').textContent = formatCurrency(totalUsdValue);
 
-        // Update earnings in USD
-        document.getElementById('dailyEarningsUsd').textContent = formatCurrency(earnings.daily * zcashPrice);
-        document.getElementById('weeklyEarningsUsd').textContent = formatCurrency(earnings.weekly * zcashPrice);
-        document.getElementById('monthlyEarningsUsd').textContent = formatCurrency(earnings.monthly * zcashPrice);
-        document.getElementById('annualEarningsUsd').textContent = formatCurrency(earnings.annual * zcashPrice);
-
-        // Update summary
-        const finalBalance = ZCASH_BALANCE + earnings.annual;
-        document.getElementById('summaryFinalUsd').textContent = formatCurrency(finalBalance * zcashPrice);
-
-        // Update last updated time
-        if (lastPriceUpdate) {
-            const timeAgo = getTimeAgo(lastPriceUpdate);
-            document.getElementById('lastUpdated').textContent = `Actualizado ${timeAgo}`;
-        }
-    } else {
-        document.getElementById('zcashPrice').textContent = 'Error al cargar';
-        document.getElementById('zcashUsdValue').textContent = 'Error';
-    }
-
-    // Update crypto earnings (independent of price)
-    document.getElementById('dailyEarningsCrypto').textContent = formatZcash(earnings.daily);
-    document.getElementById('weeklyEarningsCrypto').textContent = formatZcash(earnings.weekly);
-    document.getElementById('monthlyEarningsCrypto').textContent = formatZcash(earnings.monthly);
-    document.getElementById('annualEarningsCrypto').textContent = formatZcash(earnings.annual);
+    // Update earnings in USD
+    document.getElementById('dailyEarningsUsd').textContent = formatCurrency(earnings.daily * fdusdPrice);
+    document.getElementById('weeklyEarningsUsd').textContent = formatCurrency(earnings.weekly * fdusdPrice);
+    document.getElementById('monthlyEarningsUsd').textContent = formatCurrency(earnings.monthly * fdusdPrice);
+    document.getElementById('annualEarningsUsd').textContent = formatCurrency(earnings.annual * fdusdPrice);
 
     // Update summary
-    document.getElementById('summaryYearlyGains').textContent = formatZcash(earnings.annual);
-    const finalBalance = ZCASH_BALANCE + earnings.annual;
-    document.getElementById('summaryFinalBalance').textContent = formatZcash(finalBalance);
+    const finalBalance = FDUSD_BALANCE + earnings.annual;
+    document.getElementById('summaryFinalUsd').textContent = formatCurrency(finalBalance * fdusdPrice);
+
+    // Update last updated time
+    if (lastPriceUpdate) {
+        const timeAgo = getTimeAgo(lastPriceUpdate);
+        document.getElementById('lastUpdated').textContent = `Actualizado ${timeAgo}`;
+    }
+
+    // Update crypto earnings (in FDUSD, which equals USD)
+    document.getElementById('dailyEarningsCrypto').textContent = formatCurrency(earnings.daily);
+    document.getElementById('weeklyEarningsCrypto').textContent = formatCurrency(earnings.weekly);
+    document.getElementById('monthlyEarningsCrypto').textContent = formatCurrency(earnings.monthly);
+    document.getElementById('annualEarningsCrypto').textContent = formatCurrency(earnings.annual);
+
+    // Update summary
+    document.getElementById('summaryYearlyGains').textContent = formatCurrency(earnings.annual);
+    document.getElementById('summaryFinalBalance').textContent = formatCurrency(finalBalance);
 }
 
 // Refresh crypto data
@@ -661,18 +628,13 @@ async function refreshCryptoData() {
     btn.textContent = '🔄 Actualizando...';
     btn.disabled = true;
 
-    await fetchZcashPrice();
+    await fetchFdusdPrice();
     updateCryptoDisplay();
 
     btn.textContent = originalText;
     btn.disabled = false;
 
     showNotification('Precio actualizado correctamente');
-}
-
-// Format ZCash amount
-function formatZcash(amount) {
-    return amount.toFixed(8) + ' ZEC';
 }
 
 // Get time ago string
@@ -693,12 +655,12 @@ function getTimeAgo(date) {
 
 // Initialize crypto data
 async function initializeCrypto() {
-    await fetchZcashPrice();
+    await fetchFdusdPrice();
     updateCryptoDisplay();
 
-    // Auto-refresh every 5 minutes
+    // Auto-refresh every 5 minutes (though FDUSD price doesn't change)
     setInterval(async () => {
-        await fetchZcashPrice();
+        await fetchFdusdPrice();
         updateCryptoDisplay();
     }, 5 * 60 * 1000);
 }
