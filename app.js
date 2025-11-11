@@ -478,13 +478,21 @@ function updateIncomeProjectionChart() {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    position: 'nearest',
+                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
                     titleColor: '#f1f5f9',
-                    bodyColor: '#f1f5f9',
+                    bodyColor: '#e2e8f0',
                     borderColor: '#475569',
                     borderWidth: 1,
-                    padding: 12,
+                    padding: 10,
                     displayColors: true,
+                    titleFont: {
+                        size: 13,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 12
+                    },
                     callbacks: {
                         title: function(tooltipItems) {
                             return '📅 ' + tooltipItems[0].label;
@@ -492,50 +500,31 @@ function updateIncomeProjectionChart() {
                         label: function(context) {
                             const label = context.dataset.label || '';
                             const value = context.parsed.y;
+
+                            if (value === 0) return null; // Hide zero values
+
                             const formattedValue = formatCurrency(value);
 
                             // Add icons for better visual identification
                             let icon = '';
-                            if (label === 'FDUSD') icon = '💵 ';
-                            else if (label === 'ON') icon = '📄 ';
-                            else if (label === 'ACN Dividendos') icon = '📈 ';
+                            if (label === 'FDUSD') icon = '💵';
+                            else if (label === 'ON') icon = '📄';
+                            else if (label === 'ACN Dividendos') icon = '📈';
 
-                            return icon + label + ': ' + formattedValue;
+                            return icon + ' ' + label + ': ' + formattedValue;
                         },
-                        footer: function(tooltipItems) {
+                        afterBody: function(tooltipItems) {
                             const monthIndex = tooltipItems[0].dataIndex;
                             const total = monthlyTotals[monthIndex];
-                            const fdusdValue = fdusdIncome[monthIndex];
-                            const onValue = onIncome[monthIndex];
-                            const acnValue = acnIncome[monthIndex];
 
-                            let footer = '\n━━━━━━━━━━━━━━━━\n';
-                            footer += '💰 Total del mes: ' + formatCurrency(total);
+                            let text = '\n💰 Total: ' + formatCurrency(total);
 
-                            // Add breakdown percentages
-                            if (total > 0) {
-                                footer += '\n\n📊 Composición:';
-                                if (fdusdValue > 0) {
-                                    const fdusdPercent = ((fdusdValue / total) * 100).toFixed(1);
-                                    footer += '\n  💵 FDUSD: ' + fdusdPercent + '%';
-                                }
-                                if (onValue > 0) {
-                                    const onPercent = ((onValue / total) * 100).toFixed(1);
-                                    footer += '\n  📄 ON: ' + onPercent + '%';
-                                }
-                                if (acnValue > 0) {
-                                    const acnPercent = ((acnValue / total) * 100).toFixed(1);
-                                    footer += '\n  📈 ACN: ' + acnPercent + '%';
-                                }
-                            }
-
-                            // Highlight large payments
+                            // Only show warning for large payments
                             if (total > suggestedYMax) {
-                                footer += '\n\n⚠️ ¡Mes con pago grande!';
-                                footer += '\n(Incluye vencimiento de ON)';
+                                text += '\n⚠️ Pago grande (vencimiento ON)';
                             }
 
-                            return footer;
+                            return text;
                         }
                     }
                 }
