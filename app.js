@@ -534,7 +534,9 @@ function formatCurrency(amount) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
+    // Parse date correctly to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('es-MX', {
         year: 'numeric',
         month: 'long',
@@ -771,7 +773,10 @@ function getONPaymentForMonth(targetDate) {
 
     obligacionesNegociables.forEach(on => {
         on.paymentDates.forEach(payment => {
-            const paymentDate = new Date(payment.date);
+            // Parse date correctly to avoid timezone issues
+            const [year, month, day] = payment.date.split('-').map(Number);
+            const paymentDate = new Date(year, month - 1, day);
+
             if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear) {
                 totalPayment += payment.amount;
             }
@@ -795,44 +800,45 @@ function togglePaymentSchedule(ticker) {
     }
 }
 
-// Get all upcoming payments
+// Get all payments (not just upcoming ones)
 function getUpcomingPayments() {
-    const today = new Date();
-    const sixMonthsLater = new Date(today);
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-
-    const upcomingPayments = [];
+    const allPayments = [];
 
     obligacionesNegociables.forEach(on => {
         on.paymentDates.forEach(payment => {
-            const paymentDate = new Date(payment.date);
-            if (paymentDate >= today && paymentDate <= sixMonthsLater) {
-                upcomingPayments.push({
-                    ticker: on.ticker,
-                    name: on.name,
-                    date: paymentDate,
-                    dateStr: payment.date,
-                    type: payment.type,
-                    amount: payment.amount
-                });
-            }
+            // Parse date correctly to avoid timezone issues
+            const [year, month, day] = payment.date.split('-').map(Number);
+            const paymentDate = new Date(year, month - 1, day);
+
+            allPayments.push({
+                ticker: on.ticker,
+                name: on.name,
+                date: paymentDate,
+                dateStr: payment.date,
+                type: payment.type,
+                amount: payment.amount
+            });
         });
     });
 
     // Sort by date
-    upcomingPayments.sort((a, b) => a.date - b.date);
+    allPayments.sort((a, b) => a.date - b.date);
 
-    return upcomingPayments;
+    return allPayments;
 }
 
 // Get next payment
 function getNextPayment() {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
     let nextPayment = null;
 
     obligacionesNegociables.forEach(on => {
         on.paymentDates.forEach(payment => {
-            const paymentDate = new Date(payment.date);
+            // Parse date correctly to avoid timezone issues
+            const [year, month, day] = payment.date.split('-').map(Number);
+            const paymentDate = new Date(year, month - 1, day);
+
             if (paymentDate >= today) {
                 if (!nextPayment || paymentDate < nextPayment.date) {
                     nextPayment = {
@@ -852,6 +858,7 @@ function getNextPayment() {
 // Calculate annual income
 function calculateAnnualONIncome() {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
     const oneYearLater = new Date(today);
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
 
@@ -859,7 +866,10 @@ function calculateAnnualONIncome() {
 
     obligacionesNegociables.forEach(on => {
         on.paymentDates.forEach(payment => {
-            const paymentDate = new Date(payment.date);
+            // Parse date correctly to avoid timezone issues
+            const [year, month, day] = payment.date.split('-').map(Number);
+            const paymentDate = new Date(year, month - 1, day);
+
             if (paymentDate >= today && paymentDate <= oneYearLater) {
                 totalIncome += payment.amount;
             }
@@ -892,7 +902,7 @@ function updateUpcomingPaymentsTimeline() {
     const timelineContainer = document.getElementById('upcomingPaymentsList');
 
     if (upcomingPayments.length === 0) {
-        timelineContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No hay pagos próximos en los próximos 6 meses</p>';
+        timelineContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No hay pagos registrados</p>';
         return;
     }
 
