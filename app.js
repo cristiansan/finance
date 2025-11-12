@@ -717,7 +717,7 @@ const obligacionesNegociables = [
         paymentDates: [
             { date: '2026-03-06', type: 'Interés', amount: 321.70 },
             { date: '2026-09-06', type: 'Interés', amount: 321.70 },
-            { date: '2027-03-06', type: 'Interés + Amortización', amount: 10371.70 }
+            { date: '2027-03-06', type: 'Interés + Amortización', amount: 321.70 }
         ]
     },
     {
@@ -732,7 +732,7 @@ const obligacionesNegociables = [
             { date: '2026-05-27', type: 'Interés', amount: 153.90 },
             { date: '2026-08-27', type: 'Interés', amount: 153.90 },
             { date: '2026-11-27', type: 'Interés', amount: 153.90 },
-            { date: '2027-03-01', type: 'Interés + Amortización', amount: 10153.90 }
+            { date: '2027-03-01', type: 'Interés + Amortización', amount: 153.90 }
         ]
     },
     {
@@ -748,7 +748,7 @@ const obligacionesNegociables = [
             { date: '2026-08-07', type: 'Interés', amount: 172.30 },
             { date: '2026-11-09', type: 'Interés', amount: 172.30 },
             { date: '2027-02-08', type: 'Interés', amount: 172.30 },
-            { date: '2027-05-07', type: 'Interés + Amortización', amount: 10172.30 }
+            { date: '2027-05-07', type: 'Interés + Amortización', amount: 172.30 }
         ]
     },
     {
@@ -760,7 +760,7 @@ const obligacionesNegociables = [
         paymentDates: [
             { date: '2025-11-26', type: 'Interés', amount: 36.00 },
             { date: '2026-02-26', type: 'Interés', amount: 36.00 },
-            { date: '2026-05-26', type: 'Interés + Amortización', amount: 2036.00 }
+            { date: '2026-05-26', type: 'Interés + Amortización', amount: 36.00 }
         ]
     }
 ];
