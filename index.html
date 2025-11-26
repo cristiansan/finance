@@ -64,7 +64,7 @@
                     <div class="card-content">
                         <h3>FDUSD</h3>
                         <p class="card-value" id="dashFdusdValue">Calculando...</p>
-                        <small style="color: var(--text-secondary); font-size: 12px;" id="dashFdusdAmount">12,832 FDUSD</small>
+                        <small style="color: var(--text-secondary); font-size: 12px;" id="dashFdusdAmount">45,000 FDUSD</small>
                     </div>
                 </div>
                 <div class="card card-on">
@@ -92,7 +92,7 @@
                     <canvas id="portfolioChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h3>Proyección de Ingresos (12 meses)</h3>
+                    <h3 id="incomeProjectionTitle">Proyección de Ingresos (12 meses)</h3>
                     <canvas id="incomeProjectionChart"></canvas>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                     <div class="investment-body">
                         <div class="investment-row">
                             <span class="inv-label">Balance:</span>
-                            <span class="inv-value">12,832 FDUSD</span>
+                            <span class="inv-value">45,000 FDUSD</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Precio Actual:</span>
@@ -119,7 +119,7 @@
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">APR:</span>
-                            <span class="inv-value success">11.29%</span>
+                            <span class="inv-value success">10%</span>
                         </div>
                         <div class="investment-row">
                             <span class="inv-label">Ingresos Anuales:</span>
@@ -174,14 +174,14 @@
                 <div class="crypto-main-info">
                     <div class="crypto-balance">
                         <div class="crypto-label">Balance FDUSD</div>
-                        <div class="crypto-amount" id="fdusdBalance">12,832 FDUSD</div>
+                        <div class="crypto-amount" id="fdusdBalance">45,000 FDUSD</div>
                         <div class="crypto-usd-value" id="fdusdUsdValue">
                             <span class="loading-spinner"></span> USD
                         </div>
-                        <div class="crypto-apr-badge">APR 11.29%</div>
+                        <div class="crypto-apr-badge">APR 10%</div>
                     </div>
                     <div class="crypto-price-info">
-                        <div class="crypto-label">Precio Actual (Stablecoin)</div>
+                        <div class="crypto-label">Ganancia Estimada Diaria</div>
                         <div class="crypto-current-price" id="fdusdPrice">
                             <span class="loading-spinner"></span>
                         </div>
@@ -192,7 +192,7 @@
             </div>
 
             <!-- Earnings Projections -->
-            <h3 style="color: var(--text-primary); margin-bottom: 16px; font-size: 20px;">📈 Proyección de Ganancias (APR 11.29%)</h3>
+            <h3 style="color: var(--text-primary); margin-bottom: 16px; font-size: 20px;">📈 Proyección de Ganancias (APR 10%)</h3>
             <div class="earnings-grid">
                 <div class="earnings-card">
                     <div class="earnings-period">Ganancias Diarias</div>
@@ -221,10 +221,10 @@
                 <h3>📊 Resumen Anual</h3>
                 <div class="summary-item">
                     <span class="summary-label">Balance Inicial</span>
-                    <span class="summary-value" id="summaryInitial">$12,832 FDUSD</span>
+                    <span class="summary-value" id="summaryInitial">$45,000 FDUSD</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Ganancias Anuales (11.29% APR)</span>
+                    <span class="summary-label">Ganancias Anuales (10% APR)</span>
                     <span class="summary-value" id="summaryYearlyGains">$0.00</span>
                 </div>
                 <div class="summary-item">

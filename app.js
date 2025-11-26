@@ -269,7 +269,14 @@ function updateDashboardSummary() {
     document.getElementById('dashFdusdPrice').textContent = formatCurrency(fdusdPrice);
     document.getElementById('dashFdusdUSD').textContent = formatCurrency(fdusdUsdValue);
     document.getElementById('dashFdusdAnnual').textContent = formatCurrency(fdusdAnnualIncome);
-    document.getElementById('dashFdusdMonthly').textContent = formatCurrency(fdusdAnnualIncome / 12);
+
+    // For November 2025, calculate only 10 days (20-30) instead of full month
+    const currentDate = new Date();
+    const isNovember2025 = currentDate.getFullYear() === 2025 && currentDate.getMonth() === 10;
+    const fdusdMonthlyIncome = isNovember2025
+        ? (fdusdAnnualIncome / 12) * (10 / 30)
+        : fdusdAnnualIncome / 12;
+    document.getElementById('dashFdusdMonthly').textContent = formatCurrency(fdusdMonthlyIncome);
 
     // Update ON details
     const nextPayment = getNextPayment();
@@ -393,7 +400,13 @@ function updateIncomeProjectionChart() {
         monthsLabels.push(date.toLocaleString('es', { month: 'short', year: '2-digit' }));
 
         // FDUSD monthly income with compound growth
-        const monthlyFdusdGain = currentFdusdBalance * monthlyRate;
+        let monthlyFdusdGain = currentFdusdBalance * monthlyRate;
+
+        // For November (first month), calculate only 10 days (20-30 Nov) instead of full month
+        if (i === 0) {
+            monthlyFdusdGain = monthlyFdusdGain * (10 / 30); // Proportional to 10 days
+        }
+
         const fdusdValue = monthlyFdusdGain * fdusdPrice;
         fdusdIncome.push(fdusdValue);
         currentFdusdBalance += monthlyFdusdGain; // Compound the balance
@@ -428,6 +441,16 @@ function updateIncomeProjectionChart() {
         return total > suggestedYMax ? '#ef4444' : '#10b981';
     });
 
+    // Calculate totals for each category
+    const totalFdusd = fdusdIncome.reduce((sum, val) => sum + val, 0);
+    const totalOn = onIncome.reduce((sum, val) => sum + val, 0);
+    const totalAcn = acnIncome.reduce((sum, val) => sum + val, 0);
+    const grandTotal = totalFdusd + totalOn + totalAcn;
+
+    // Update title with total
+    document.getElementById('incomeProjectionTitle').textContent =
+        'Proyección de Ingresos (12 meses): ' + formatCurrency(grandTotal);
+
     const ctx = document.getElementById('incomeProjectionChart').getContext('2d');
 
     if (incomeProjectionChart) {
@@ -440,21 +463,21 @@ function updateIncomeProjectionChart() {
             labels: monthsLabels,
             datasets: [
                 {
-                    label: 'FDUSD',
+                    label: 'FDUSD (' + formatCurrency(totalFdusd) + ')',
                     data: fdusdIncome,
                     backgroundColor: 'rgba(247, 147, 26, 0.7)',
                     borderColor: '#f7931a',
                     borderWidth: 1
                 },
                 {
-                    label: 'ON',
+                    label: 'ON (' + formatCurrency(totalOn) + ')',
                     data: onIncome,
                     backgroundColor: onColors,
                     borderColor: onBorderColors,
                     borderWidth: 1
                 },
                 {
-                    label: 'ACN Dividendos',
+                    label: 'ACN Dividendos (' + formatCurrency(totalAcn) + ')',
                     data: acnIncome,
                     backgroundColor: 'rgba(168, 85, 247, 0.7)',
                     borderColor: '#a855f7',
@@ -471,8 +494,9 @@ function updateIncomeProjectionChart() {
                     labels: {
                         color: '#f1f5f9',
                         font: {
-                            size: 14
-                        }
+                            size: 13
+                        },
+                        padding: 15
                     }
                 },
                 tooltip: {
@@ -586,8 +610,8 @@ function formatDate(dateString) {
 // Crypto Management
 // ===================================
 
-const FDUSD_BALANCE = 12832; // FDUSD balance in USD
-const APR = 0.1129; // 11.29%
+const FDUSD_BALANCE = 45000; // FDUSD balance in USD
+const APR = 0.10; // 10%
 let fdusdPrice = 1.00; // FDUSD is a stablecoin pegged to $1
 let lastPriceUpdate = null;
 
@@ -624,8 +648,8 @@ function calculateEarnings() {
 function updateCryptoDisplay() {
     const earnings = calculateEarnings();
 
-    // Update price display (FDUSD is always $1)
-    document.getElementById('fdusdPrice').textContent = formatCurrency(fdusdPrice);
+    // Update daily earnings display
+    document.getElementById('fdusdPrice').textContent = formatCurrency(earnings.daily * fdusdPrice);
 
     // Update USD value (FDUSD is 1:1 with USD)
     const totalUsdValue = FDUSD_BALANCE * fdusdPrice;
